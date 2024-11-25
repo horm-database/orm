@@ -2,16 +2,12 @@ module github.com/horm-database/orm
 
 go 1.18
 
-replace github.com/horm-database/common => ../common
-
-replace github.com/horm-database/go-horm/horm => ../go-horm/horm
-
 require (
 	github.com/ClickHouse/clickhouse-go/v2 v2.13.4
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/gomodule/redigo v1.8.9
-	github.com/horm-database/common v0.0.0-00010101000000-000000000000
-	github.com/horm-database/go-horm/horm v0.0.0-00010101000000-000000000000
+	github.com/horm-database/common v0.0.1
+	github.com/horm-database/go-horm/horm v0.0.2
 	github.com/olivere/elastic/v6 v6.2.1
 	github.com/olivere/elastic/v7 v7.0.32
 	github.com/samber/lo v1.47.0
