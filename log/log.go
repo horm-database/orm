@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/horm/common/consts"
-	"github.com/horm/common/log"
-	"github.com/horm/common/util"
+	"github.com/horm-database/common/consts"
+	"github.com/horm-database/common/log"
+	"github.com/horm-database/common/util"
 )
 
 // NewTimeLog 获取超时日志

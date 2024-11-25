@@ -3,8 +3,8 @@ package elastic
 import (
 	"errors"
 
-	"github.com/horm/common/types"
-	
+	"github.com/horm-database/common/types"
+
 	esv7 "github.com/olivere/elastic/v7"
 )
 

@@ -10,8 +10,8 @@ import (
 
 	"github.com/ClickHouse/clickhouse-go/v2"
 	"github.com/go-sql-driver/mysql"
-	"github.com/horm/common/errs"
-	"github.com/horm/common/util"
+	"github.com/horm-database/common/errs"
+	"github.com/horm-database/common/util"
 )
 
 // Client 底层查询代理
@@ -140,7 +140,7 @@ func (c *client) invoke(ctx context.Context,
 	}()
 
 	timeout := c.writeTimeout
-	
+
 	if op == OpQuery {
 		timeout = c.readTimeout
 	}

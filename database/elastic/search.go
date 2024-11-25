@@ -3,11 +3,11 @@ package elastic
 import (
 	"fmt"
 
-	"github.com/horm/common/json"
-	"github.com/horm/common/proto"
-	"github.com/horm/common/proto/elastic"
-	"github.com/horm/common/types"
-	"github.com/horm/common/util"
+	"github.com/horm-database/common/json"
+	"github.com/horm-database/common/proto"
+	"github.com/horm-database/common/proto/elastic"
+	"github.com/horm-database/common/util"
+	"github.com/samber/lo"
 
 	esv6 "github.com/olivere/elastic/v6"
 	esv7 "github.com/olivere/elastic/v7"
@@ -231,7 +231,7 @@ func formatOrder(orders []string) []esv7.Sorter {
 
 func unknownFieldError(desc string, params map[string]interface{}, supportField ...string) error {
 	for field := range params {
-		if !types.InArrayString(supportField, field) {
+		if lo.IndexOf(supportField, field) == -1 {
 			return fmt.Errorf("[%s] query does not support field [%s]", desc, field)
 		}
 	}

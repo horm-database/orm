@@ -4,14 +4,14 @@ import (
 	"context"
 	"strings"
 
-	"github.com/horm/common/errs"
-	"github.com/horm/common/log"
-	"github.com/horm/common/proto"
-	"github.com/horm/common/proto/filter"
-	"github.com/horm/common/types"
-	"github.com/horm/common/util"
-	"github.com/horm/orm/database"
-	"github.com/horm/orm/obj"
+	"github.com/horm-database/common/errs"
+	"github.com/horm-database/common/log"
+	"github.com/horm-database/common/proto"
+	"github.com/horm-database/common/proto/filter"
+	"github.com/horm-database/common/types"
+	"github.com/horm-database/common/util"
+	"github.com/horm-database/orm/database"
+	"github.com/horm-database/orm/obj"
 )
 
 // 节点查询

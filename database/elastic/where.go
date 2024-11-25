@@ -3,9 +3,9 @@ package elastic
 import (
 	"reflect"
 
-	"github.com/horm/common/consts"
-	"github.com/horm/common/types"
-	"github.com/horm/common/util"
+	"github.com/horm-database/common/consts"
+	"github.com/horm-database/common/types"
+	"github.com/horm-database/common/util"
 
 	esv7 "github.com/olivere/elastic/v7"
 )

@@ -5,9 +5,9 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/horm/common/consts"
-	"github.com/horm/common/errs"
-	"github.com/horm/orm/database/sql/client"
+	"github.com/horm-database/common/consts"
+	"github.com/horm-database/common/errs"
+	"github.com/horm-database/orm/database/sql/client"
 )
 
 // Find 查询符合要求的一条数据，返回结果为 map[string]string

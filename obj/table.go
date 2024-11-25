@@ -4,7 +4,7 @@ package obj
 import (
 	"time"
 
-	"github.com/horm/common/util"
+	"github.com/horm-database/common/util"
 )
 
 type TblDB struct {

@@ -4,9 +4,9 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/horm/common/consts"
-	"github.com/horm/common/types"
-	"github.com/horm/common/util"
+	"github.com/horm-database/common/consts"
+	"github.com/horm-database/common/types"
+	"github.com/horm-database/common/util"
 )
 
 // Statement 查询语句结构体

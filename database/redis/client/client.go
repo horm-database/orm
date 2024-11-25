@@ -9,9 +9,9 @@ import (
 	"time"
 
 	redigo "github.com/gomodule/redigo/redis"
-	"github.com/horm/common/consts"
-	"github.com/horm/common/errs"
-	"github.com/horm/common/util"
+	"github.com/horm-database/common/consts"
+	"github.com/horm-database/common/errs"
+	"github.com/horm-database/common/util"
 )
 
 // Client redis请求接口

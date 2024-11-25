@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/horm/common/util"
+	"github.com/horm-database/common/util"
 
 	esv6 "github.com/olivere/elastic/v6"
 	esv7 "github.com/olivere/elastic/v7"

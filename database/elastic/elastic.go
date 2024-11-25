@@ -4,11 +4,11 @@ import (
 	"context"
 	"strings"
 
-	"github.com/horm/common/consts"
-	"github.com/horm/common/errs"
-	"github.com/horm/common/proto"
-	"github.com/horm/common/types"
-	"github.com/horm/orm/database/elastic/client"
+	"github.com/horm-database/common/consts"
+	"github.com/horm-database/common/errs"
+	"github.com/horm-database/common/proto"
+	"github.com/horm-database/common/types"
+	"github.com/horm-database/orm/database/elastic/client"
 
 	esv6 "github.com/olivere/elastic/v6"
 	esv7 "github.com/olivere/elastic/v7"

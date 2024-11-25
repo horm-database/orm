@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/horm/common/consts"
+	"github.com/horm-database/common/consts"
 )
 
 var (

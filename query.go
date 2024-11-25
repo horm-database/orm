@@ -1,8 +1,8 @@
 package orm
 
 import (
-	"github.com/horm/go-horm/horm"
-	"github.com/horm/go-horm/horm/codec"
+	"github.com/horm-database/go-horm/horm"
+	"github.com/horm-database/go-horm/horm/codec"
 )
 
 // Op 设置操作

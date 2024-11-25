@@ -3,14 +3,14 @@ package elastic
 import (
 	"context"
 
-	"github.com/horm/common/consts"
-	"github.com/horm/common/log"
-	"github.com/horm/common/proto"
-	"github.com/horm/common/proto/filter"
-	"github.com/horm/common/types"
-	"github.com/horm/common/util"
-	ol "github.com/horm/orm/log"
-	"github.com/horm/orm/obj"
+	"github.com/horm-database/common/consts"
+	"github.com/horm-database/common/log"
+	"github.com/horm-database/common/proto"
+	"github.com/horm-database/common/proto/filter"
+	"github.com/horm-database/common/types"
+	"github.com/horm-database/common/util"
+	ol "github.com/horm-database/orm/log"
+	"github.com/horm-database/orm/obj"
 )
 
 const (

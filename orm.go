@@ -5,12 +5,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/horm/common/consts"
-	"github.com/horm/common/errs"
-	"github.com/horm/common/types"
-	"github.com/horm/common/util"
-	"github.com/horm/go-horm/horm"
-	"github.com/horm/orm/obj"
+	"github.com/horm-database/common/consts"
+	"github.com/horm-database/common/errs"
+	"github.com/horm-database/common/types"
+	"github.com/horm-database/common/util"
+	"github.com/horm-database/go-horm/horm"
+	"github.com/horm-database/orm/obj"
 )
 
 // ORM 统一接入协议 本地 orm 的实现

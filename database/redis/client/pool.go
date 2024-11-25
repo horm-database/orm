@@ -10,7 +10,7 @@ import (
 	"time"
 
 	redigo "github.com/gomodule/redigo/redis"
-	"github.com/horm/common/types"
+	"github.com/horm-database/common/types"
 )
 
 var (

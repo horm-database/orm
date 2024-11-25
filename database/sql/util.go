@@ -6,10 +6,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/horm/common/consts"
-	"github.com/horm/common/errs"
-	util2 "github.com/horm/common/json"
-	"github.com/horm/orm/log"
+	"github.com/horm-database/common/consts"
+	"github.com/horm-database/common/errs"
+	util2 "github.com/horm-database/common/json"
+	"github.com/horm-database/orm/log"
 )
 
 var defaultTimeLayout = "2006-01-02 15:04:05 -0700 MST" // time.Parse 解析数据库时间字段到 NullTime 时的 layout，默认格式: "2006-01-02 15:04:05 -0700 MST"

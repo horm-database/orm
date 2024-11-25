@@ -4,20 +4,20 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/horm/common/consts"
+	"github.com/horm-database/common/consts"
 )
 
-//InsertSQL 创建 insert 语句
+// InsertSQL 创建 insert 语句
 func InsertSQL(statement *Statement) string {
 	return fmt.Sprint("INSERT INTO `", statement.table, "` ", statement.set)
 }
 
-//ReplaceSQL 创建 replace 语句
+// ReplaceSQL 创建 replace 语句
 func ReplaceSQL(statement *Statement) string {
 	return fmt.Sprint("REPLACE INTO `", statement.table, "` ", statement.set)
 }
 
-//UpdateSQL 创建 update 语句
+// UpdateSQL 创建 update 语句
 func UpdateSQL(statement *Statement) string {
 	sqlBuilder := strings.Builder{}
 
@@ -51,7 +51,7 @@ func UpdateSQL(statement *Statement) string {
 	return sqlBuilder.String()
 }
 
-//DeleteSQL 创建 delete 语句
+// DeleteSQL 创建 delete 语句
 func DeleteSQL(statement *Statement) string {
 	sqlBuilder := strings.Builder{}
 
@@ -85,7 +85,7 @@ func DeleteSQL(statement *Statement) string {
 	return sqlBuilder.String()
 }
 
-//CountSQL 创建 count 语句
+// CountSQL 创建 count 语句
 func CountSQL(statement *Statement) (sql string) {
 	origin := statement.selects
 
@@ -112,7 +112,7 @@ func CountSQL(statement *Statement) (sql string) {
 	return sqlBuilder.String()
 }
 
-//FindSQL 组装mysql 语句
+// FindSQL 组装mysql 语句
 func FindSQL(statement *Statement) (sql string) {
 	sqlBuilder := findSQL(statement)
 

@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/horm/common/errs"
-	"github.com/horm/common/json"
-	"github.com/horm/common/log"
+	"github.com/horm-database/common/errs"
+	"github.com/horm-database/common/json"
+	"github.com/horm-database/common/log"
 )
 
 // InsertToCK clickhouse 批量插入，（必须通过事务生成批量语句，然后提交）

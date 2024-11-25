@@ -3,7 +3,7 @@ package sql
 import (
 	"time"
 
-	"github.com/horm/common/types"
+	"github.com/horm-database/common/types"
 )
 
 const (

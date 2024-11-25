@@ -1,11 +1,11 @@
 package obj
 
 import (
-	"github.com/horm/common/consts"
-	"github.com/horm/common/errs"
-	"github.com/horm/common/proto"
-	"github.com/horm/common/types"
-	"github.com/horm/orm/database/sql/client"
+	"github.com/horm-database/common/consts"
+	"github.com/horm-database/common/errs"
+	"github.com/horm-database/common/proto"
+	"github.com/horm-database/orm/database/sql/client"
+	"github.com/samber/lo"
 )
 
 // Tree 查询分析树
@@ -75,7 +75,7 @@ func (ti *TransInfo) SetTxClient(dsn string, cli client.Client) {
 
 	ti.TxClients[dsn] = cli
 
-	if !types.InArrayString(ti.DBs, dsn) {
+	if lo.IndexOf(ti.DBs, dsn) == -1 {
 		ti.DBs = append(ti.DBs, dsn)
 	}
 }

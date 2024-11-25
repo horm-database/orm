@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/horm/common/errs"
-	"github.com/horm/common/json"
-	"github.com/horm/orm/log"
+	"github.com/horm-database/common/errs"
+	"github.com/horm-database/common/json"
+	"github.com/horm-database/orm/log"
 
 	esv6 "github.com/olivere/elastic/v6"
 	esv7 "github.com/olivere/elastic/v7"

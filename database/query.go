@@ -3,15 +3,15 @@ package database
 import (
 	"context"
 
-	"github.com/horm/common/consts"
-	"github.com/horm/common/errs"
-	"github.com/horm/common/proto"
-	"github.com/horm/common/proto/filter"
-	"github.com/horm/common/util"
-	"github.com/horm/orm/database/elastic"
-	"github.com/horm/orm/database/redis"
-	"github.com/horm/orm/database/sql"
-	"github.com/horm/orm/obj"
+	"github.com/horm-database/common/consts"
+	"github.com/horm-database/common/errs"
+	"github.com/horm-database/common/proto"
+	"github.com/horm-database/common/proto/filter"
+	"github.com/horm-database/common/util"
+	"github.com/horm-database/orm/database/elastic"
+	"github.com/horm-database/orm/database/redis"
+	"github.com/horm-database/orm/database/sql"
+	"github.com/horm-database/orm/obj"
 )
 
 // Query 数据库开放接口

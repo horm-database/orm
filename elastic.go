@@ -1,7 +1,7 @@
 package orm
 
 import (
-	"github.com/horm/go-horm/horm"
+	"github.com/horm-database/go-horm/horm"
 )
 
 // Type elastic search 版本 v7 以前有 type， v7之后 type 统一为 _doc
