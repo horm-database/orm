@@ -132,8 +132,10 @@ func (c *client) invoke(ctx context.Context,
 			err = errs.NewDBError(int(e.Code), e.Message)
 		case *mysql.MySQLError:
 			err = errs.NewDBError(int(e.Number), e.Message)
-		case *errs.Error, nil:
+		case *errs.Error:
 			err = e
+		case nil:
+			err = nil
 		default:
 			err = errs.NewDBError(errs.RetClientNetErr, err.Error())
 		}

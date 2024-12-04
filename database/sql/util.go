@@ -41,8 +41,7 @@ func (q *Query) logError(err error, sql string, params []interface{}) error {
 			db, errs.Msg(err), GetSQLWithParams(sql, params))
 	}
 
-	return errs.Newf(errs.Code(err), "%s query error: [%v], sql=[%s]",
-		db, errs.Msg(err), GetSQLWithParams(sql, params))
+	return errs.NewDBErrorf(errs.Code(err), "%s query error: [%v]", db, errs.Msg(err))
 }
 
 func GetSQLWithParams(sql string, params []interface{}) string {

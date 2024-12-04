@@ -11,8 +11,7 @@ import (
 )
 
 // Find 查询符合要求的一条数据，返回结果为 map[string]string
-func (q *Query) Find(ctx context.Context, s *Statement,
-	querySQL string, params []interface{}) (result map[string]interface{}, err error) {
+func (q *Query) Find(ctx context.Context) (result map[string]interface{}, err error) {
 	next := func(rows *sql.Rows) error {
 		if q.Addr.Type == consts.DBTypeClickHouse {
 			result, err = q.nextRowCK(rows)
@@ -23,18 +22,12 @@ func (q *Query) Find(ctx context.Context, s *Statement,
 		return err
 	}
 
-	if querySQL == "" {
-		querySQL = FindSQL(s)
-		params = s.params
-	}
-
-	err = q.query(ctx, next, querySQL, params...)
+	err = q.query(ctx, next, q.SQL, q.Params...)
 	return
 }
 
 // FindAll 查询符合要求的所有数据，返回 []map[string]string 格式数据
-func (q *Query) FindAll(ctx context.Context, s *Statement,
-	querySQL string, params []interface{}) (result []map[string]interface{}, err error) {
+func (q *Query) FindAll(ctx context.Context) (result []map[string]interface{}, err error) {
 	next := func(rows *sql.Rows) (err error) {
 		var item map[string]interface{}
 
@@ -53,26 +46,19 @@ func (q *Query) FindAll(ctx context.Context, s *Statement,
 		return nil
 	}
 
-	if querySQL == "" {
-		querySQL = FindSQL(s)
-		params = s.params
-	}
-
-	err = q.query(ctx, next, querySQL, params...)
+	err = q.query(ctx, next, q.SQL, q.Params...)
 	return
 }
 
 // Count 统计总数
-func (q *Query) Count(ctx context.Context, s *Statement) (uint64, error) {
-	querySQL := CountSQL(s)
-
+func (q *Query) Count(ctx context.Context) (uint64, error) {
 	var count uint64
 
 	next := func(rows *sql.Rows) error {
 		return rows.Scan(&count)
 	}
 
-	err := q.query(ctx, next, querySQL, s.params...)
+	err := q.query(ctx, next, q.CountSQL, q.Params...)
 	return count, err
 }
 
@@ -89,15 +75,15 @@ func (q *Query) Transaction(ctx context.Context, fn func(c *Query) error) error 
 }
 
 // execute 原生操作支持，支持自定义sql语句，比如delete，update,insert,replace
-func (q *Query) execute(ctx context.Context, querySQL string, args ...interface{}) (int64, int64, error) {
+func (q *Query) execute(ctx context.Context) (int64, int64, error) {
 	err := q.initClient(ctx)
 	if err != nil {
 		return 0, 0, err
 	}
 
-	ret, err := q.client.Exec(ctx, querySQL, args...)
+	ret, err := q.client.Exec(ctx, q.SQL, q.Params...)
 	if err != nil {
-		return 0, 0, q.logError(err, querySQL, args)
+		return 0, 0, q.logError(err, q.SQL, q.Params)
 	}
 
 	rowsAffected, err := ret.RowsAffected()
@@ -105,17 +91,17 @@ func (q *Query) execute(ctx context.Context, querySQL string, args ...interface{
 	if err != nil {
 		db, _ := consts.DBTypeDesc[q.Addr.Type]
 		q.TimeLog.Errorf(errs.RetAffectResultFailed,
-			"%s query get RowsAffected Error: [%v], sql=[%s], params=[%v]", db, err, querySQL, args)
+			"%s query get RowsAffected Error: [%v], sql=[%s], params=[%v]", db, err, q.SQL, q.Params)
 	}
 
 	lastInsertID, err := ret.LastInsertId()
 	if err != nil {
 		db, _ := consts.DBTypeDesc[q.Addr.Type]
 		q.TimeLog.Errorf(errs.RetAffectResultFailed,
-			"%s query get LastInsertId Error: [%v], sql=[%s], params=[%v]", db, err, querySQL, args)
+			"%s query get LastInsertId Error: [%v], sql=[%s], params=[%v]", db, err, q.SQL, q.Params)
 	}
 
-	q.logInfo(querySQL, args)
+	q.logInfo(q.SQL, q.Params)
 
 	return rowsAffected, lastInsertID, nil
 }

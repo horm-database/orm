@@ -28,6 +28,8 @@ type Redis struct {
 
 	Addr    *util.DBAddress
 	TimeLog *log.TimeLog
+
+	QL string
 }
 
 func (r *Redis) SetParams(req *filter.Request,
@@ -136,6 +138,11 @@ func (r *Redis) Do(ctx context.Context) (interface{}, bool, error) {
 	}
 
 	return ret, false, nil
+}
+
+// GetQueryStatement 获取 es 的查询语句
+func (r *Redis) GetQueryStatement() string {
+	return r.QL
 }
 
 func (r *Redis) do(ctx context.Context) (interface{}, bool, error) {

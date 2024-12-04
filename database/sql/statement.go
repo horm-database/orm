@@ -31,6 +31,8 @@ type Statement struct {
 
 	condBuilder *strings.Builder
 	condParams  []interface{}
+
+	op string
 }
 
 // GetOrder 获取排序 order

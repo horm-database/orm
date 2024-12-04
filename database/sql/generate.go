@@ -7,183 +7,202 @@ import (
 	"github.com/horm-database/common/consts"
 )
 
+func (s *Statement) GetSQL() string {
+	switch s.op {
+	case consts.OpInsert:
+		return s.InsertSQL()
+	case consts.OpReplace:
+		return s.ReplaceSQL()
+	case consts.OpUpdate:
+		return s.UpdateSQL()
+	case consts.OpDelete:
+		return s.DeleteSQL()
+	case consts.OpFind, consts.OpFindAll:
+		return s.FindSQL()
+	case consts.OpCount:
+		return s.CountSQL()
+	}
+
+	return ""
+}
+
 // InsertSQL 创建 insert 语句
-func InsertSQL(statement *Statement) string {
-	return fmt.Sprint("INSERT INTO `", statement.table, "` ", statement.set)
+func (s *Statement) InsertSQL() string {
+	return fmt.Sprint("INSERT INTO `", s.table, "` ", s.set)
 }
 
 // ReplaceSQL 创建 replace 语句
-func ReplaceSQL(statement *Statement) string {
-	return fmt.Sprint("REPLACE INTO `", statement.table, "` ", statement.set)
+func (s *Statement) ReplaceSQL() string {
+	return fmt.Sprint("REPLACE INTO `", s.table, "` ", s.set)
 }
 
 // UpdateSQL 创建 update 语句
-func UpdateSQL(statement *Statement) string {
+func (s *Statement) UpdateSQL() string {
 	sqlBuilder := strings.Builder{}
 
-	if statement.dbType == consts.DBTypeClickHouse {
+	if s.dbType == consts.DBTypeClickHouse {
 		sqlBuilder.WriteString("ALTER TABLE `")
-		sqlBuilder.WriteString(statement.table)
+		sqlBuilder.WriteString(s.table)
 		sqlBuilder.WriteString("` UPDATE ")
-		sqlBuilder.WriteString(statement.set)
+		sqlBuilder.WriteString(s.set)
 	} else {
 		sqlBuilder.WriteString("UPDATE `")
-		sqlBuilder.WriteString(statement.table)
+		sqlBuilder.WriteString(s.table)
 		sqlBuilder.WriteString("` SET ")
-		sqlBuilder.WriteString(statement.set)
+		sqlBuilder.WriteString(s.set)
 	}
-	if statement.where != "" {
+	if s.where != "" {
 		sqlBuilder.WriteString(" WHERE ")
-		sqlBuilder.WriteString(statement.where)
+		sqlBuilder.WriteString(s.where)
 	}
-	if statement.GetOrder() != "" {
+	if s.GetOrder() != "" {
 		sqlBuilder.WriteString(" ORDER BY ")
-		sqlBuilder.WriteString(statement.GetOrder())
+		sqlBuilder.WriteString(s.GetOrder())
 	}
-	if statement.limit > 0 {
+	if s.limit > 0 {
 		sqlBuilder.WriteString(" LIMIT ")
-		sqlBuilder.WriteString(fmt.Sprint(statement.limit))
+		sqlBuilder.WriteString(fmt.Sprint(s.limit))
 	}
-	if statement.offset > 0 {
+	if s.offset > 0 {
 		sqlBuilder.WriteString(" OFFSET ")
-		sqlBuilder.WriteString(fmt.Sprint(statement.offset))
+		sqlBuilder.WriteString(fmt.Sprint(s.offset))
 	}
 	return sqlBuilder.String()
 }
 
 // DeleteSQL 创建 delete 语句
-func DeleteSQL(statement *Statement) string {
+func (s *Statement) DeleteSQL() string {
 	sqlBuilder := strings.Builder{}
 
-	if statement.dbType == consts.DBTypeClickHouse {
+	if s.dbType == consts.DBTypeClickHouse {
 		sqlBuilder.WriteString("ALTER TABLE `")
-		sqlBuilder.WriteString(statement.table)
+		sqlBuilder.WriteString(s.table)
 		sqlBuilder.WriteString("` DELETE ")
 	} else {
 		sqlBuilder.WriteString("DELETE FROM `")
-		sqlBuilder.WriteString(statement.table)
+		sqlBuilder.WriteString(s.table)
 		sqlBuilder.WriteString("` ")
 	}
 
-	if statement.where != "" {
+	if s.where != "" {
 		sqlBuilder.WriteString(" WHERE ")
-		sqlBuilder.WriteString(statement.where)
+		sqlBuilder.WriteString(s.where)
 	}
-	if statement.GetOrder() != "" {
+	if s.GetOrder() != "" {
 		sqlBuilder.WriteString(" ORDER BY ")
-		sqlBuilder.WriteString(statement.GetOrder())
+		sqlBuilder.WriteString(s.GetOrder())
 	}
-	if statement.limit > 0 {
+	if s.limit > 0 {
 		sqlBuilder.WriteString(" LIMIT ")
-		sqlBuilder.WriteString(fmt.Sprint(statement.limit))
+		sqlBuilder.WriteString(fmt.Sprint(s.limit))
 	}
-	if statement.offset > 0 {
+	if s.offset > 0 {
 		sqlBuilder.WriteString(" OFFSET ")
-		sqlBuilder.WriteString(fmt.Sprint(statement.offset))
+		sqlBuilder.WriteString(fmt.Sprint(s.offset))
 	}
 
 	return sqlBuilder.String()
 }
 
 // CountSQL 创建 count 语句
-func CountSQL(statement *Statement) (sql string) {
-	origin := statement.selects
+func (s *Statement) CountSQL() (sql string) {
+	origin := s.selects
 
-	if statement.selects == "*" || statement.selects == "" {
-		statement.selects = "count(*)"
+	if s.selects == "*" || s.selects == "" {
+		s.selects = "count(*)"
 	} else {
 		str := "count("
-		if statement.distinct {
+		if s.distinct {
 			str = "count( DISTINCT"
 		}
-		if len(statement.selects) <= 6 {
-			statement.selects = fmt.Sprint(str, statement.selects, ")")
+		if len(s.selects) <= 6 {
+			s.selects = fmt.Sprint(str, s.selects, ")")
 		} else {
-			statement.selects = strings.TrimSpace(statement.selects)
-			prefix := strings.ToLower(statement.selects[:6])
+			s.selects = strings.TrimSpace(s.selects)
+			prefix := strings.ToLower(s.selects[:6])
 			if prefix != "count(" {
-				statement.selects = fmt.Sprint(str, statement.selects, ")")
+				s.selects = fmt.Sprint(str, s.selects, ")")
 			}
 		}
 	}
 
-	sqlBuilder := findSQL(statement)
-	statement.selects = origin
+	sqlBuilder := s.findSQL()
+	s.selects = origin
 	return sqlBuilder.String()
 }
 
 // FindSQL 组装mysql 语句
-func FindSQL(statement *Statement) (sql string) {
-	sqlBuilder := findSQL(statement)
+func (s *Statement) FindSQL() (sql string) {
+	sqlBuilder := s.findSQL()
 
-	if statement.GetOrder() != "" {
+	if s.GetOrder() != "" {
 		sqlBuilder.WriteString(" ORDER BY ")
-		sqlBuilder.WriteString(statement.GetOrder())
+		sqlBuilder.WriteString(s.GetOrder())
 	}
 
-	if statement.limit > 0 {
+	if s.limit > 0 {
 		sqlBuilder.WriteString(" LIMIT ")
-		sqlBuilder.WriteString(fmt.Sprint(statement.limit))
+		sqlBuilder.WriteString(fmt.Sprint(s.limit))
 	}
 
-	if statement.offset > 0 {
+	if s.offset > 0 {
 		sqlBuilder.WriteString(" OFFSET ")
-		sqlBuilder.WriteString(fmt.Sprint(statement.offset))
+		sqlBuilder.WriteString(fmt.Sprint(s.offset))
 	}
 
-	if statement.forUpdate != "" {
+	if s.forUpdate != "" {
 		sqlBuilder.WriteString(" ")
-		sqlBuilder.WriteString(statement.forUpdate)
+		sqlBuilder.WriteString(s.forUpdate)
 	}
 
 	return sqlBuilder.String()
 }
 
-func findSQL(statement *Statement) *strings.Builder {
+func (s *Statement) findSQL() *strings.Builder {
 	sqlBuilder := strings.Builder{}
 
-	if statement.alias != "" {
+	if s.alias != "" {
 		sqlBuilder.WriteString(" SELECT ")
-		sqlBuilder.WriteString(statement.selects)
+		sqlBuilder.WriteString(s.selects)
 		sqlBuilder.WriteString(" FROM `")
-		sqlBuilder.WriteString(statement.table)
+		sqlBuilder.WriteString(s.table)
 		sqlBuilder.WriteString("` AS `")
-		sqlBuilder.WriteString(statement.alias)
+		sqlBuilder.WriteString(s.alias)
 		sqlBuilder.WriteString("`")
 	} else {
 		sqlBuilder.WriteString(" SELECT ")
-		sqlBuilder.WriteString(statement.selects)
+		sqlBuilder.WriteString(s.selects)
 		sqlBuilder.WriteString(" FROM `")
-		sqlBuilder.WriteString(statement.table)
+		sqlBuilder.WriteString(s.table)
 		sqlBuilder.WriteString("`")
 	}
 
-	if statement.indexHints != "" {
+	if s.indexHints != "" {
 		sqlBuilder.WriteString(" ")
-		sqlBuilder.WriteString(statement.indexHints)
+		sqlBuilder.WriteString(s.indexHints)
 	}
 
-	if len(statement.join) > 0 {
-		for _, j := range statement.join {
+	if len(s.join) > 0 {
+		for _, j := range s.join {
 			sqlBuilder.WriteString(" ")
 			sqlBuilder.WriteString(j)
 			sqlBuilder.WriteString(" ")
 		}
 	}
 
-	if statement.where != "" {
+	if s.where != "" {
 		sqlBuilder.WriteString(" WHERE ")
-		sqlBuilder.WriteString(statement.where)
+		sqlBuilder.WriteString(s.where)
 	}
 
-	if statement.group != "" {
+	if s.group != "" {
 		sqlBuilder.WriteString(" GROUP BY ")
-		sqlBuilder.WriteString(statement.group)
+		sqlBuilder.WriteString(s.group)
 	}
 
-	if statement.having != "" {
+	if s.having != "" {
 		sqlBuilder.WriteString(" HAVING ")
-		sqlBuilder.WriteString(statement.having)
+		sqlBuilder.WriteString(s.having)
 	}
 
 	return &sqlBuilder

@@ -47,6 +47,8 @@ type Query struct {
 
 	Addr    *util.DBAddress
 	TimeLog *log.TimeLog
+
+	QL string
 }
 
 func (q *Query) SetParams(req *filter.Request,
@@ -146,6 +148,11 @@ func (q *Query) Query(ctx context.Context) (interface{}, *proto.Detail, bool, er
 	}
 
 	return nil, nil, false, nil
+}
+
+// GetQueryStatement 获取 es 的查询语句
+func (q *Query) GetQueryStatement() string {
+	return q.QL
 }
 
 // Printf 实现 elastic Logger 接口

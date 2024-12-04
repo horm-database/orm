@@ -19,9 +19,9 @@ func (q *Query) createTable(ctx context.Context, shard []string,
 		return nil, errs.Newf(errs.RetClickhouseCreate, "create table %s `s create sql not set", shard)
 	}
 
-	sql := parseSql(createSql, shard[0], ifNotExists)
+	q.SQL = parseSql(createSql, shard[0], ifNotExists)
 
-	rowsAffected, lastInsertID, err := q.execute(ctx, sql)
+	rowsAffected, lastInsertID, err := q.execute(ctx)
 	if err != nil {
 		return nil, err
 	}

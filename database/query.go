@@ -18,6 +18,7 @@ import (
 type Query interface {
 	Query(ctx context.Context) (interface{}, *proto.Detail, bool, error)                                     // 查询
 	SetParams(req *filter.Request, prop *obj.Property, addr *util.DBAddress, transInfo *obj.TransInfo) error // 设置查询参数
+	GetQueryStatement() string                                                                               // 获取查询语句
 }
 
 func QueryResult(ctx context.Context, req *filter.Request, node *obj.Tree,

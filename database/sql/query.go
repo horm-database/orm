@@ -30,6 +30,7 @@ type Query struct {
 	Size          int
 	From          uint64
 	SQL           string
+	CountSQL      string
 	Params        []interface{}
 
 	// 建表用
@@ -122,7 +123,7 @@ func (q *Query) Query(ctx context.Context) (interface{}, *proto.Detail, bool, er
 		return result, nil, false, err
 	}
 
-	statement := &Statement{dbType: q.Addr.Type}
+	statement := &Statement{dbType: q.Addr.Type, op: q.OP}
 	statement.SetColumn(q.Column)
 	statement.SetTable(q.Table, q.Alias)
 	statement.Join(q.Join)
@@ -150,28 +151,12 @@ func (q *Query) Query(ctx context.Context) (interface{}, *proto.Detail, bool, er
 	statement.Order(q.Order)
 
 	if q.OP == consts.OpInsert || q.OP == consts.OpReplace || q.OP == consts.OpUpdate || q.OP == consts.OpDelete {
-		var querySql string
-		var params []interface{}
-
 		if q.SQL == "" {
-			switch q.OP {
-			case consts.OpInsert:
-				querySql = InsertSQL(statement)
-			case consts.OpReplace:
-				querySql = ReplaceSQL(statement)
-			case consts.OpUpdate:
-				querySql = UpdateSQL(statement)
-			case consts.OpDelete:
-				querySql = DeleteSQL(statement)
-			}
-
-			params = statement.params
-		} else {
-			querySql = q.SQL
-			params = q.Params
+			q.SQL = statement.GetSQL()
+			q.Params = statement.params
 		}
 
-		rowsAffected, lastInsertID, err := q.execute(ctx, querySql, params...)
+		rowsAffected, lastInsertID, err := q.execute(ctx)
 		if err != nil {
 			return nil, nil, false, err
 		}
@@ -183,10 +168,15 @@ func (q *Query) Query(ctx context.Context) (interface{}, *proto.Detail, bool, er
 
 		return &result, nil, false, nil
 	} else if q.OP == consts.OpFind {
-		q.Page = 0
-		q.Size = 1
+		if q.SQL == "" {
+			q.Size = 1
+			statement.limit = 1
+			statement.offset = q.From
+			q.SQL = statement.GetSQL()
+			q.Params = statement.params
+		}
 
-		dest, err := q.Find(ctx, statement, q.SQL, q.Params)
+		dest, err := q.Find(ctx)
 		if err != nil {
 			return nil, nil, false, err
 		}
@@ -200,8 +190,11 @@ func (q *Query) Query(ctx context.Context) (interface{}, *proto.Detail, bool, er
 		var detail *proto.Detail
 
 		if q.Page > 0 {
+			q.CountSQL = statement.CountSQL()
+			q.Params = statement.params
+
 			detail = &proto.Detail{Page: q.Page, Size: q.Size}
-			total, err := q.Count(ctx, statement)
+			total, err := q.Count(ctx)
 			if err != nil {
 				return nil, nil, false, err
 			}
@@ -214,7 +207,12 @@ func (q *Query) Query(ctx context.Context) (interface{}, *proto.Detail, bool, er
 		statement.limit = q.Size
 		statement.offset = q.From
 
-		dest, err := q.FindAll(ctx, statement, q.SQL, q.Params)
+		if q.SQL == "" {
+			q.SQL = statement.GetSQL()
+			q.Params = statement.params
+		}
+
+		dest, err := q.FindAll(ctx)
 		if err != nil {
 			return nil, nil, false, err
 		}
@@ -224,7 +222,27 @@ func (q *Query) Query(ctx context.Context) (interface{}, *proto.Detail, bool, er
 		}
 
 		return dest, detail, false, nil
+	} else if q.OP == consts.OpCount {
+		if q.SQL == "" {
+			q.CountSQL = statement.GetSQL()
+			q.Params = statement.params
+			q.SQL = q.CountSQL
+		} else {
+			q.CountSQL = q.SQL
+		}
+
+		total, err := q.Count(ctx)
+		if err != nil {
+			return nil, nil, false, err
+		}
+
+		return total, nil, false, nil
 	}
 
 	return nil, nil, false, nil
+}
+
+// GetQueryStatement 获取 sql 语句
+func (q *Query) GetQueryStatement() string {
+	return q.SQL
 }
