@@ -8,7 +8,7 @@ import (
 	"github.com/horm-database/common/errs"
 	"github.com/horm-database/common/log"
 	"github.com/horm-database/common/proto"
-	"github.com/horm-database/common/proto/filter"
+	"github.com/horm-database/common/proto/plugin"
 	"github.com/horm-database/common/types"
 	"github.com/horm-database/common/util"
 	"github.com/horm-database/orm/database/sql/client"
@@ -54,7 +54,7 @@ type Join struct {
 	On    map[string]string `json:"on,omitempty"`
 }
 
-func (q *Query) SetParams(req *filter.Request,
+func (q *Query) SetParams(req *plugin.Request,
 	property *obj.Property, addr *util.DBAddress, transInfo *obj.TransInfo) error {
 	q.OP = req.Op
 	q.Table = req.Tables[0]

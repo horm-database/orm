@@ -7,7 +7,7 @@ import (
 	"github.com/horm-database/common/errs"
 	"github.com/horm-database/common/log"
 	"github.com/horm-database/common/proto"
-	"github.com/horm-database/common/proto/filter"
+	"github.com/horm-database/common/proto/plugin"
 	"github.com/horm-database/common/types"
 	"github.com/horm-database/common/util"
 	"github.com/horm-database/orm/database"
@@ -28,7 +28,7 @@ func query(ctx context.Context, node *obj.Tree) (result interface{}, detail *pro
 	op := realNode.GetOp()
 	unit := realNode.GetUnit()
 
-	request := &filter.Request{}
+	request := &plugin.Request{}
 
 	request.Op = op
 	request.Tables = realNode.Tables()

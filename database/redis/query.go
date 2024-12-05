@@ -9,7 +9,7 @@ import (
 	"github.com/horm-database/common/errs"
 	"github.com/horm-database/common/log"
 	"github.com/horm-database/common/proto"
-	"github.com/horm-database/common/proto/filter"
+	"github.com/horm-database/common/proto/plugin"
 	"github.com/horm-database/common/types"
 	"github.com/horm-database/common/util"
 	"github.com/horm-database/orm/database/redis/client"
@@ -32,7 +32,7 @@ type Redis struct {
 	QL string
 }
 
-func (r *Redis) SetParams(req *filter.Request,
+func (r *Redis) SetParams(req *plugin.Request,
 	prop *obj.Property, addr *util.DBAddress, transInfo *obj.TransInfo) error {
 	r.Cmd = req.Op
 	r.Prefix = req.Prefix

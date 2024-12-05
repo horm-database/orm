@@ -6,7 +6,7 @@ import (
 	"github.com/horm-database/common/consts"
 	"github.com/horm-database/common/log"
 	"github.com/horm-database/common/proto"
-	"github.com/horm-database/common/proto/filter"
+	"github.com/horm-database/common/proto/plugin"
 	"github.com/horm-database/common/types"
 	"github.com/horm-database/common/util"
 	ol "github.com/horm-database/orm/log"
@@ -51,7 +51,7 @@ type Query struct {
 	QL string
 }
 
-func (q *Query) SetParams(req *filter.Request,
+func (q *Query) SetParams(req *plugin.Request,
 	prop *obj.Property, addr *util.DBAddress, transInfo *obj.TransInfo) error {
 	q.OP = req.Op
 	q.Index = req.Tables

@@ -6,7 +6,7 @@ import (
 	"github.com/horm-database/common/consts"
 	"github.com/horm-database/common/errs"
 	"github.com/horm-database/common/proto"
-	"github.com/horm-database/common/proto/filter"
+	"github.com/horm-database/common/proto/plugin"
 	"github.com/horm-database/common/util"
 	"github.com/horm-database/orm/database/elastic"
 	"github.com/horm-database/orm/database/redis"
@@ -17,11 +17,11 @@ import (
 // Query 数据库开放接口
 type Query interface {
 	Query(ctx context.Context) (interface{}, *proto.Detail, bool, error)                                     // 查询
-	SetParams(req *filter.Request, prop *obj.Property, addr *util.DBAddress, transInfo *obj.TransInfo) error // 设置查询参数
+	SetParams(req *plugin.Request, prop *obj.Property, addr *util.DBAddress, transInfo *obj.TransInfo) error // 设置查询参数
 	GetQueryStatement() string                                                                               // 获取查询语句
 }
 
-func QueryResult(ctx context.Context, req *filter.Request, node *obj.Tree,
+func QueryResult(ctx context.Context, req *plugin.Request, node *obj.Tree,
 	addr *util.DBAddress, transInfo *obj.TransInfo) (interface{}, *proto.Detail, bool, error) {
 	var query Query
 
