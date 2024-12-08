@@ -2,6 +2,8 @@ package elastic
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/horm-database/common/consts"
 	"github.com/horm-database/common/log"
@@ -159,8 +161,8 @@ func (q *Query) GetQueryStatement() string {
 func (q *Query) Printf(format string, v ...interface{}) {
 	if q.logStep == 0 {
 		q.logStep++
-		//	q.RequestLog = strings.Replace(fmt.Sprintf(format, v...), "\n", "", -1)
+		q.QL = strings.Replace(fmt.Sprintf(format, v...), "\n", "", -1)
 	} else {
-		//	q.ResponseLog = strings.Replace(fmt.Sprintf(format, v...), "\n", "", -1)
+		q.QL = strings.Replace(fmt.Sprintf(format, v...), "\n", "", -1)
 	}
 }
