@@ -135,7 +135,7 @@ func (q *Query) Query(ctx context.Context) (interface{}, *proto.Detail, bool, er
 	if q.OP == consts.OpInsert {
 		if q.Addr.Type == consts.DBTypeClickHouse {
 			_, _, err := q.InsertToCK(ctx, "", false, 0, q.Table, q.Datas)
-			return proto.ModResult{}, nil, false, err
+			return proto.ModRet{}, nil, false, err
 		} else {
 			statement.SetMaps(q.Datas)
 		}
@@ -161,7 +161,7 @@ func (q *Query) Query(ctx context.Context) (interface{}, *proto.Detail, bool, er
 			return nil, nil, false, err
 		}
 
-		result := proto.ModResult{
+		result := proto.ModRet{
 			RowAffected: rowsAffected,
 			ID:          proto.ID(fmt.Sprint(lastInsertID)),
 		}

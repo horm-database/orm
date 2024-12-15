@@ -26,7 +26,7 @@ func (q *Query) createTable(ctx context.Context, shard []string,
 		return nil, err
 	}
 
-	result := proto.ModResult{
+	result := proto.ModRet{
 		RowAffected: rowsAffected,
 		ID:          proto.ID(fmt.Sprint(lastInsertID)),
 	}

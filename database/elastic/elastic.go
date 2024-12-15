@@ -15,7 +15,7 @@ import (
 )
 
 // 插入新数据（V7 SDK 版本兼容 V6 操作）
-func (q *Query) insert(ctx context.Context, op, id string) (*proto.ModResult, *proto.Detail, bool, error) {
+func (q *Query) insert(ctx context.Context, op, id string) (*proto.ModRet, *proto.Detail, bool, error) {
 	opts := []esv7.ClientOptionFunc{esv7.SetTraceLog(q)}
 	clientV7, err := client.NewClientV7(false, q.Addr, opts...)
 
@@ -50,11 +50,11 @@ func (q *Query) insert(ctx context.Context, op, id string) (*proto.ModResult, *p
 
 	q.logInfo("insert", id, nil)
 
-	return &proto.ModResult{ID: proto.ID(retV7.Id), Version: retV7.Version, RowAffected: 1}, nil, false, nil
+	return &proto.ModRet{ID: proto.ID(retV7.Id), Version: retV7.Version, RowAffected: 1}, nil, false, nil
 }
 
 // 批量插入新数据，（V7 SDK 版本兼容 V6 操作）
-func (q *Query) bulkInsert(ctx context.Context, op string) ([]*proto.ModResult, *proto.Detail, bool, error) {
+func (q *Query) bulkInsert(ctx context.Context, op string) ([]*proto.ModRet, *proto.Detail, bool, error) {
 	opts := []esv7.ClientOptionFunc{esv7.SetTraceLog(q)}
 	clientV7, err := client.NewClientV7(false, q.Addr, opts...)
 	if err != nil {
@@ -87,10 +87,10 @@ func (q *Query) bulkInsert(ctx context.Context, op string) ([]*proto.ModResult, 
 		return nil, nil, false, q.logError("bulkInsert", "", nil, err)
 	}
 
-	var affectInfo []*proto.ModResult
+	var affectInfo []*proto.ModRet
 	var allFailed = true
 
-	affectInfo = make([]*proto.ModResult, len(retV7.Items))
+	affectInfo = make([]*proto.ModRet, len(retV7.Items))
 	for k, item := range retV7.Items {
 		for _, idx := range item {
 			var reason string
@@ -113,7 +113,7 @@ func (q *Query) bulkInsert(ctx context.Context, op string) ([]*proto.ModResult, 
 }
 
 // 通过ID更新数据（V7 SDK 版本兼容 V6 操作）
-func (q *Query) updateByID(ctx context.Context, id string) (*proto.ModResult, *proto.Detail, bool, error) {
+func (q *Query) updateByID(ctx context.Context, id string) (*proto.ModRet, *proto.Detail, bool, error) {
 	var err error
 	var clientV7 *esv7.Client
 	var retV7 *esv7.UpdateResponse
@@ -149,11 +149,11 @@ func (q *Query) updateByID(ctx context.Context, id string) (*proto.ModResult, *p
 
 	q.logInfo("updateByID", id, nil)
 
-	return &proto.ModResult{ID: proto.ID(retV7.Id), Version: retV7.Version, RowAffected: 1}, nil, false, nil
+	return &proto.ModRet{ID: proto.ID(retV7.Id), Version: retV7.Version, RowAffected: 1}, nil, false, nil
 }
 
 // 通过query条件更新数据
-func (q *Query) updateByQuery(ctx context.Context) (*proto.ModResult, *proto.Detail, bool, error) {
+func (q *Query) updateByQuery(ctx context.Context) (*proto.ModRet, *proto.Detail, bool, error) {
 	var err error
 	var clientV6 *esv6.Client
 	var clientV7 *esv7.Client
@@ -207,14 +207,14 @@ func (q *Query) updateByQuery(ctx context.Context) (*proto.ModResult, *proto.Det
 	q.logInfo("updateByQuery", "", nil)
 
 	if retV6 != nil {
-		return &proto.ModResult{RowAffected: retV6.Updated}, nil, false, nil
+		return &proto.ModRet{RowAffected: retV6.Updated}, nil, false, nil
 	} else {
-		return &proto.ModResult{RowAffected: retV7.Updated}, nil, false, nil
+		return &proto.ModRet{RowAffected: retV7.Updated}, nil, false, nil
 	}
 }
 
 // 通过ID删除数据（V7 SDK 版本兼容 V6 操作）
-func (q *Query) deleteByID(ctx context.Context, id string) (*proto.ModResult, *proto.Detail, bool, error) {
+func (q *Query) deleteByID(ctx context.Context, id string) (*proto.ModRet, *proto.Detail, bool, error) {
 	opts := []esv7.ClientOptionFunc{esv7.SetTraceLog(q)}
 	clientV7, err := client.NewClientV7(false, q.Addr, opts...)
 
@@ -230,11 +230,11 @@ func (q *Query) deleteByID(ctx context.Context, id string) (*proto.ModResult, *p
 
 	q.logInfo("deleteByID", id, nil)
 
-	return &proto.ModResult{ID: proto.ID(retV7.Id), Version: retV7.Version, RowAffected: 1}, nil, false, nil
+	return &proto.ModRet{ID: proto.ID(retV7.Id), Version: retV7.Version, RowAffected: 1}, nil, false, nil
 }
 
 // 通过 query 条件删除数据（V7 SDK 版本兼容 V6 操作）
-func (q *Query) deleteByQuery(ctx context.Context) (*proto.ModResult, *proto.Detail, bool, error) {
+func (q *Query) deleteByQuery(ctx context.Context) (*proto.ModRet, *proto.Detail, bool, error) {
 	opts := []esv7.ClientOptionFunc{esv7.SetTraceLog(q)}
 	clientV7, err := client.NewClientV7(false, q.Addr, opts...)
 
@@ -255,7 +255,7 @@ func (q *Query) deleteByQuery(ctx context.Context) (*proto.ModResult, *proto.Det
 
 	q.logInfo("deleteByQuery", "", esFilter)
 
-	return &proto.ModResult{RowAffected: retV7.Deleted}, nil, false, nil
+	return &proto.ModRet{RowAffected: retV7.Deleted}, nil, false, nil
 }
 
 func (q *Query) search(ctx context.Context) ([]map[string]interface{}, *proto.Detail, bool, error) {
@@ -422,7 +422,7 @@ func (q *Query) getScriptFromData() string {
 }
 
 func (q *Query) getAffected(id string, version int64, status int,
-	reason string, allFailed *bool) *proto.ModResult {
+	reason string, allFailed *bool) *proto.ModRet {
 	var rowAffected int64
 
 	if status >= 200 && status <= 299 {
@@ -436,7 +436,7 @@ func (q *Query) getAffected(id string, version int64, status int,
 		_ = q.logError("getAffected", id, nil, errs.NewDBError(status, reason))
 	}
 
-	return &proto.ModResult{
+	return &proto.ModRet{
 		ID:          proto.ID(id),
 		Version:     version,
 		RowAffected: rowAffected,
