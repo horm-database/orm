@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/horm-database/common/consts"
+	"github.com/horm-database/common/proto/sql"
 	"github.com/horm-database/common/types"
 	"github.com/horm-database/common/util"
 )
@@ -244,7 +245,7 @@ func (s *Statement) Order(orders []string) *Statement {
 }
 
 // Join 表 join
-func (s *Statement) Join(joins []*Join) *Statement {
+func (s *Statement) Join(joins []*sql.Join) *Statement {
 	if len(joins) == 0 {
 		return s
 	}

@@ -25,11 +25,11 @@ type Tree struct {
 
 	// 返回结果
 	Finished  int8          // 查询单元是否执行完毕 0-未执行 1-已执行 2-待回滚
-	ParentRet interface{}   // 父查询的多条结果记录分别存入各个子查询。
+	Error     error         // 查询错误
 	IsNil     bool          // 结果为空
 	Detail    *proto.Detail // 查询细节信息
 	Result    interface{}   // 查询结果
-	Error     error         // 查询错误
+	ParentRet interface{}   // 父查询的多条结果记录分别存入各个子查询。
 
 	// 查询信息
 	Unit     *proto.Unit // 查询单元

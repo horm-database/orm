@@ -9,6 +9,7 @@ import (
 	"github.com/horm-database/common/log"
 	"github.com/horm-database/common/proto"
 	"github.com/horm-database/common/proto/plugin"
+	"github.com/horm-database/common/proto/sql"
 	"github.com/horm-database/common/types"
 	"github.com/horm-database/common/util"
 	"github.com/horm-database/orm/database/sql/client"
@@ -23,7 +24,7 @@ type Query struct {
 	Column        []string
 	Group         []string
 	Order         []string
-	Join          []*Join
+	Join          []*sql.Join
 	Data          map[string]interface{}
 	Datas         []map[string]interface{}
 	Page          int
@@ -44,14 +45,6 @@ type Query struct {
 	TimeLog   *log.TimeLog
 
 	client client.Client
-}
-
-// Join MySQL 表 JOIN
-type Join struct {
-	Type  string            `json:"type,omitempty"`
-	Table string            `json:"table,omitempty"`
-	Using []string          `json:"using,omitempty"`
-	On    map[string]string `json:"on,omitempty"`
 }
 
 func (q *Query) SetParams(req *plugin.Request,
@@ -86,7 +79,7 @@ func (q *Query) SetParams(req *plugin.Request,
 
 	if len(joins) > 0 {
 		for _, v := range joins {
-			join := Join{}
+			join := sql.Join{}
 			join.Type, _ = types.GetString(v, "type")
 			join.Table, _ = types.GetString(v, "table")
 			join.Using, _, err = types.GetStringArray(v, "using")
