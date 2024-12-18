@@ -5,12 +5,10 @@ import (
 	"fmt"
 
 	"github.com/horm-database/common/consts"
-	"github.com/horm-database/common/errs"
 	"github.com/horm-database/common/log"
 	"github.com/horm-database/common/proto"
 	"github.com/horm-database/common/proto/plugin"
 	"github.com/horm-database/common/proto/sql"
-	"github.com/horm-database/common/types"
 	"github.com/horm-database/common/util"
 	"github.com/horm-database/orm/database/sql/client"
 	ol "github.com/horm-database/orm/log"
@@ -71,37 +69,7 @@ func (q *Query) SetParams(req *plugin.Request,
 	q.TblTable = property.Table
 
 	q.Shard = req.Tables
-
-	joins, _, err := req.Params.GetMapArray("join")
-	if err != nil {
-		return errs.Newf(errs.RetDBReqParams, "sql get params join error: %v", err)
-	}
-
-	if len(joins) > 0 {
-		for _, v := range joins {
-			join := sql.Join{}
-			join.Type, _ = types.GetString(v, "type")
-			join.Table, _ = types.GetString(v, "table")
-			join.Using, _, err = types.GetStringArray(v, "using")
-			if err != nil {
-				return errs.Newf(errs.RetDBReqParams, "sql get params join using error: %v", err)
-			}
-
-			on, _, err := types.GetMap(v, "on")
-			if err != nil {
-				return errs.Newf(errs.RetDBReqParams, "sql get params join on error: %v", err)
-			}
-
-			if len(on) > 0 {
-				join.On = map[string]string{}
-				for onKey, onVal := range on {
-					join.On[onKey] = types.InterfaceToString(onVal)
-				}
-			}
-
-			q.Join = append(q.Join, &join)
-		}
-	}
+	q.Join = req.Join
 
 	q.IfNotExists, _ = req.Params.GetBool("if_not_exists")
 	return nil

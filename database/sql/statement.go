@@ -251,7 +251,7 @@ func (s *Statement) Join(joins []*sql.Join) *Statement {
 	}
 
 	for _, join := range joins {
-		s.realJoin(join.Table, join.Type, join.Using, join.On)
+		s.realJoin(join.Table, strings.ToUpper(join.Type), join.Using, join.On)
 	}
 
 	return s

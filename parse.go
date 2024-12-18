@@ -44,6 +44,8 @@ func query(ctx context.Context, node *obj.Tree) (result interface{}, detail *pro
 	request.Data = unit.Data
 	request.Datas = unit.Datas
 
+	request.Join = unit.Join
+
 	request.Type = unit.Type
 	request.Scroll = unit.Scroll
 
