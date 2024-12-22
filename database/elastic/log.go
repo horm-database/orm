@@ -94,7 +94,7 @@ func (q *Query) formatError(loc, id string, source interface{}, err error) error
 		msg.WriteString(cause.String())
 
 		if code == 0 {
-			code = errs.RetElastic
+			code = errs.ErrElasticQuery
 		}
 	}
 

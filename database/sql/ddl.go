@@ -12,11 +12,11 @@ import (
 func (q *Query) createTable(ctx context.Context, shard []string,
 	createSql string, ifNotExists bool) (interface{}, error) {
 	if len(shard) == 0 {
-		return nil, errs.Newf(errs.RetClickhouseCreate, "create table shard is empty", shard)
+		return nil, errs.Newf(errs.ErrClickhouseCreate, "create table shard is empty", shard)
 	}
 
 	if createSql == "" {
-		return nil, errs.Newf(errs.RetClickhouseCreate, "create table %s `s create sql not set", shard)
+		return nil, errs.Newf(errs.ErrClickhouseCreate, "create table %s `s create sql not set", shard)
 	}
 
 	q.SQL = parseSql(createSql, shard[0], ifNotExists)

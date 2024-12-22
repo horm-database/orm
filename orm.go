@@ -37,7 +37,7 @@ func NewORM(dbName string) *ORM {
 
 	dbType, ok := consts.DBTypeMap[dbConf.Type]
 	if !ok {
-		c.initErr = errs.Newf(errs.RetDBConfigTypeInvalid, "db config type invalid: %s", dbConf.Type)
+		c.initErr = errs.Newf(errs.ErrDBTypeInvalid, "db config type invalid: %s", dbConf.Type)
 		return &c
 	}
 
@@ -64,7 +64,7 @@ func NewORM(dbName string) *ORM {
 
 	err = util.ParseConnFromAddress(c.db.Addr)
 	if err != nil {
-		c.initErr = errs.Newf(errs.RetDBAddressParseError, "db address [%s] parse error: %v", dbConf.Address, err)
+		c.initErr = errs.Newf(errs.ErrDBAddressParse, "db address [%s] parse error: %v", dbConf.Address, err)
 		return &c
 	}
 
@@ -79,7 +79,7 @@ func (o *ORM) Exec(ctx context.Context, retReceiver ...interface{}) (isNil bool,
 
 	defer func() {
 		if e := recover(); e != nil {
-			err = errs.New(errs.RetPanic, fmt.Sprintf("%v", e))
+			err = errs.New(errs.ErrPanic, fmt.Sprintf("%v", e))
 		}
 		o.query.Reset()
 	}()
@@ -104,7 +104,7 @@ func (o *ORM) Exec(ctx context.Context, retReceiver ...interface{}) (isNil bool,
 
 	err = o.query.GetCoder().Decode(o.query.ResultType, ret, retReceiver)
 	if err != nil {
-		return false, errs.Newf(errs.RetClientDecodeFail,
+		return false, errs.Newf(errs.ErrClientDecode,
 			"[request_id=%d] %v, result=[%s]", o.query.RequestID, err, types.InterfaceToString(ret))
 	}
 

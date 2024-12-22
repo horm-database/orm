@@ -29,7 +29,7 @@ func (q *Query) InsertToCK(ctx context.Context, desc string, batch bool, retryTi
 	fn := func(c *Query) error {
 		stmt, err := c.client.Prepare(ctx, insertSQL)
 		if err != nil {
-			log.Errorf(ctx, errs.RetClickhouseInsert,
+			log.Errorf(ctx, errs.ErrClickhouseInsert,
 				"%s clickhouse %s insert to table [%s] prepare error:[%v] sql=[%s]",
 				retryDesc(retryTime), desc, table, err, insertSQL)
 			return err
@@ -84,7 +84,7 @@ func (q *Query) InsertToCK(ctx context.Context, desc string, batch bool, retryTi
 	retryFn := func(c *Query) error {
 		stmt, err := c.client.Prepare(ctx, insertSQL)
 		if err != nil {
-			log.Errorf(ctx, errs.RetClickhouseInsert,
+			log.Errorf(ctx, errs.ErrClickhouseInsert,
 				"%s clickhouse %s insert to table [%s] retry prepare error:[%v] sql=[%s]",
 				retryDesc(retryTime), desc, table, err, insertSQL)
 			return err
@@ -130,7 +130,7 @@ func (q *Query) insertItem(ctx context.Context, desc string,
 	_, err := stmt.Exec(params...)
 
 	if err != nil {
-		log.Errorf(ctx, errs.RetClickhouseInsert, "clickhouse %s insert item stmt.Exec error: [%v], "+
+		log.Errorf(ctx, errs.ErrClickhouseInsert, "clickhouse %s insert item stmt.Exec error: [%v], "+
 			"table=[%s], data=[%s]", desc, err, table, json.MarshalToString(data))
 	}
 

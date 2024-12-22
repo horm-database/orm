@@ -18,8 +18,8 @@ import (
 func query(ctx context.Context, node *obj.Tree) (result interface{}, detail *proto.Detail, isNil bool, err error) {
 	defer func() {
 		if e := recover(); e != nil {
-			err = errs.Newf(errs.RetPanic, "query panic: %v", e)
-			log.Errorf(ctx, errs.RetPanic, "query panic: %v", e)
+			err = errs.Newf(errs.ErrPanic, "query panic: %v", e)
+			log.Errorf(ctx, errs.ErrPanic, "query panic: %v", e)
 			return
 		}
 	}()
@@ -64,7 +64,7 @@ func query(ctx context.Context, node *obj.Tree) (result interface{}, detail *pro
 // 初始化分析树
 func initTree(node *obj.Tree, unit *proto.Unit, db *obj.TblDB) error {
 	if db == nil {
-		return errs.Newf(errs.RetNotFindName, "not find db, data name is %s", unit.Name)
+		return errs.Newf(errs.ErrNotFindName, "not find db, data name is %s", unit.Name)
 	}
 
 	node.Name = unit.Name

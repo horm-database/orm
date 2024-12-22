@@ -36,7 +36,7 @@ func QueryResult(ctx context.Context, req *plugin.Request, node *obj.Tree,
 	}
 
 	if query == nil {
-		return nil, nil, false, errs.Newf(errs.RetNotFindQueryImp,
+		return nil, nil, false, errs.Newf(errs.ErrQueryNotImp,
 			"not find database %s`s query implementation, type=[%d]", node.GetDB().Name, addr.Type)
 	}
 

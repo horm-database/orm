@@ -87,17 +87,16 @@ func (q *Query) execute(ctx context.Context) (int64, int64, error) {
 	}
 
 	rowsAffected, err := ret.RowsAffected()
-
 	if err != nil {
 		db, _ := consts.DBTypeDesc[q.Addr.Type]
-		q.TimeLog.Errorf(errs.RetAffectResultFailed,
+		q.TimeLog.Errorf(errs.ErrAffectResult,
 			"%s query get RowsAffected Error: [%v], sql=[%s], params=[%v]", db, err, q.SQL, q.Params)
 	}
 
 	lastInsertID, err := ret.LastInsertId()
 	if err != nil {
 		db, _ := consts.DBTypeDesc[q.Addr.Type]
-		q.TimeLog.Errorf(errs.RetAffectResultFailed,
+		q.TimeLog.Errorf(errs.ErrAffectResult,
 			"%s query get LastInsertId Error: [%v], sql=[%s], params=[%v]", db, err, q.SQL, q.Params)
 	}
 

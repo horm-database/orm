@@ -281,7 +281,7 @@ func (q *Query) search(ctx context.Context) ([]map[string]interface{}, *proto.De
 	searchSource, err := q.getSearchSource()
 	if err != nil {
 		return nil, nil, false, q.formatError("search.getSearchSource", "", nil,
-			errs.New(errs.RetDBReqParams, err.Error()))
+			errs.New(errs.ErrDBParams, err.Error()))
 	}
 
 	if clientV6 != nil {
@@ -326,7 +326,7 @@ func (q *Query) scrollByQuery(ctx context.Context) ([]map[string]interface{}, *p
 	searchSource, err := q.getSearchSource()
 	if err != nil {
 		return nil, nil, false, q.formatError("scrollByQuery.getSearchSource", "", nil,
-			errs.New(errs.RetDBReqParams, err.Error()))
+			errs.New(errs.ErrDBParams, err.Error()))
 	}
 
 	if clientV6 != nil {

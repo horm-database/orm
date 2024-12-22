@@ -100,7 +100,7 @@ func (c *client) FinishTx(err error) error {
 
 	if err != nil {
 		if e := c.tx.Rollback(); e != nil {
-			return errs.NewDBErrorf(errs.RetTransaction,
+			return errs.NewDBErrorf(errs.ErrTransaction,
 				"rollback error: [%s], source query error=[%s]", e.Error(), err.Error())
 		}
 		return err
@@ -109,7 +109,7 @@ func (c *client) FinishTx(err error) error {
 	err = c.tx.Commit()
 	if err != nil {
 		if e := c.tx.Rollback(); e != nil {
-			return errs.NewDBErrorf(errs.RetTransaction,
+			return errs.NewDBErrorf(errs.ErrTransaction,
 				"rollback error: [%s], source commit error=[%s]", e.Error(), err.Error())
 		}
 		return err
@@ -123,7 +123,7 @@ func (c *client) invoke(ctx context.Context,
 	op int8, query string, args []interface{}, next NextFunc) (rsp sql.Result, err error) {
 	defer func() {
 		if err == sql.ErrNoRows {
-			err = errs.NewDBError(errs.RetSQLQuery, "sql: no rows in result set")
+			err = errs.NewDBError(errs.ErrSQLQuery, "sql: no rows in result set")
 			return
 		}
 
@@ -137,7 +137,7 @@ func (c *client) invoke(ctx context.Context,
 		case nil:
 			err = nil
 		default:
-			err = errs.NewDBError(errs.RetClientNetErr, err.Error())
+			err = errs.NewDBError(errs.ErrClientNet, err.Error())
 		}
 	}()
 
@@ -165,12 +165,12 @@ func (c *client) invoke(ctx context.Context,
 			rsp, err = c.db.ExecContext(ctx, query, args...)
 		}
 	default:
-		return nil, errs.NewDBError(errs.RetUnknown, "mysql: undefined op type")
+		return nil, errs.NewDBError(errs.ErrUnknown, "mysql: undefined op type")
 	}
 
 	if e, ok := err.(net.Error); ok {
 		if e.Timeout() {
-			err = errs.Newf(errs.RetClientTimeout, fmt.Sprintf("%s, cost:%s", e.Error(), time.Since(begin)))
+			err = errs.Newf(errs.ErrClientTimeout, fmt.Sprintf("%s, cost:%s", e.Error(), time.Since(begin)))
 		}
 	}
 

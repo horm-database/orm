@@ -34,7 +34,10 @@ func (q *Query) logInfo(sql string, params []interface{}) {
 func (q *Query) logError(err error, sql string, params []interface{}) error {
 	db, _ := consts.DBTypeDesc[q.Addr.Type]
 
-	err = errs.SetErrorCode(err, errs.RetSQLQuery)
+	errCode := errs.Code(err)
+	if errCode == errs.Success || errCode == errs.ErrUnknown {
+		err = errs.SetErrorCode(err, errs.ErrSQLQuery)
+	}
 
 	if !log.OmitError(q.Addr) {
 		q.TimeLog.Errorf(errs.Code(err), "%s query error: [%v], sql=[%s]",
