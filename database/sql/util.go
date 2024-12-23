@@ -48,8 +48,7 @@ func (q *Query) logInfo(sql string, params []interface{}) {
 func (q *Query) logError(err error, sql string, params []interface{}) error {
 	db, _ := consts.DBTypeDesc[q.Addr.Type]
 
-	errCode := errs.Code(err)
-	if errCode == errs.Success || errCode == errs.ErrUnknown {
+	if errs.Code(err) == errs.ErrUnknown {
 		err = errs.SetErrorCode(err, errs.ErrSQLQuery)
 	}
 
