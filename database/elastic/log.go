@@ -130,6 +130,6 @@ func (q *Query) formatError(loc, id string, source interface{}, err error) error
 	if err == nil {
 		return errors.New(msg.String())
 	} else {
-		return errs.NewDBError(code, msg.String())
+		return errs.NewDB(code, msg.String())
 	}
 }

@@ -147,7 +147,7 @@ func (r *Redis) Do(ctx context.Context) (interface{}, bool, error) {
 			return nil, true, nil
 		}
 
-		return nil, false, errs.NewDBErrorf(errs.ErrRedisDecode,
+		return nil, false, errs.NewDBf(errs.ErrRedisDecode,
 			"redis decode error: [%v], cmd=[%s %s%s %v]", err, r.Cmd, r.Prefix, r.Key, util.FormatArgs(r.Args))
 	}
 

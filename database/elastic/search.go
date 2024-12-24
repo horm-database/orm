@@ -82,19 +82,19 @@ func formatSearchResultV6(res *esv6.SearchResult, hits *esv6.SearchHits,
 		hitSource, _ := hit.Source.MarshalJSON()
 		_ = json.Api.Unmarshal(hitSource, &data)
 
-		elasticDetail := elastic.ItemInfo{}
-		elasticDetail.Score = hit.Score
-		elasticDetail.Index = hit.Index
-		elasticDetail.Id = hit.Id
+		metaInfo := elastic.MetaInfo{}
+		metaInfo.Score = hit.Score
+		metaInfo.Index = hit.Index
+		metaInfo.Id = hit.Id
 
 		if hit.Nested != nil {
-			elasticDetail.Nested = &elastic.NestedHit{
+			metaInfo.Nested = &elastic.NestedHit{
 				Field:  hit.Nested.Field,
 				Offset: hit.Nested.Offset,
 			}
 		}
 
-		data["_elastic"] = elasticDetail
+		data["_elastic"] = metaInfo
 
 		if len(hit.InnerHits) > 0 {
 			for name, innerHit := range hit.InnerHits {
@@ -127,17 +127,17 @@ func formatSearchResultV7(res *esv7.SearchResult, hits *esv7.SearchHits,
 		hitSource, _ := hit.Source.MarshalJSON()
 		_ = json.Api.Unmarshal(hitSource, &data)
 
-		elasticDetail := elastic.ItemInfo{}
-		elasticDetail.Score = hit.Score
-		elasticDetail.Index = hit.Index
-		elasticDetail.Id = hit.Id
+		metaInfo := elastic.MetaInfo{}
+		metaInfo.Score = hit.Score
+		metaInfo.Index = hit.Index
+		metaInfo.Id = hit.Id
 
 		if hit.Nested != nil {
-			elasticDetail.Nested = &elastic.NestedHit{}
-			copyNestedFromEs(elasticDetail.Nested, hit.Nested)
+			metaInfo.Nested = &elastic.NestedHit{}
+			copyNestedFromEs(metaInfo.Nested, hit.Nested)
 		}
 
-		data["_elastic"] = elasticDetail
+		data["_elastic"] = metaInfo
 
 		if len(hit.InnerHits) > 0 {
 			for name, innerHit := range hit.InnerHits {

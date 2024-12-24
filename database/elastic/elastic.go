@@ -118,7 +118,7 @@ func (q *Query) bulkInsert(ctx context.Context, op string) ([]*proto.ModRet, *pr
 
 	if allFailed { //bulk 所有都失败了，取第一条错误。
 		return nil, nil, false, q.logError("bulkInsert", "", nil,
-			errs.NewDBError(affectInfo[0].Status, affectInfo[0].Reason))
+			errs.NewDB(affectInfo[0].Status, affectInfo[0].Reason))
 	}
 
 	q.logInfo("bulkInsert", "", nil)
@@ -447,7 +447,7 @@ func (q *Query) getAffected(id string, version int64, status int,
 	if status == 0 {
 		*allFailed = false
 	} else {
-		_ = q.logError("getAffected", id, nil, errs.NewDBError(status, reason))
+		_ = q.logError("getAffected", id, nil, errs.NewDB(status, reason))
 	}
 
 	return &proto.ModRet{

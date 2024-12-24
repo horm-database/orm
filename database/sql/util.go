@@ -47,17 +47,12 @@ func (q *Query) logInfo(sql string, params []interface{}) {
 
 func (q *Query) logError(err error, sql string, params []interface{}) error {
 	db, _ := consts.DBTypeDesc[q.Addr.Type]
-
-	if errs.Code(err) == errs.ErrUnknown {
-		err = errs.SetErrorCode(err, errs.ErrSQLQuery)
-	}
-
 	if !log.OmitError(q.Addr) {
 		q.TimeLog.Errorf(errs.Code(err), "%s query error: [%v], sql=[%s]",
 			db, errs.Msg(err), GetSQLWithParams(sql, params))
 	}
 
-	return errs.NewDBErrorf(errs.Code(err), "%s query error: [%v]", db, errs.Msg(err))
+	return errs.NewDBf(errs.Code(err), "%s query error: [%v]", db, errs.Msg(err))
 }
 
 func GetSQLWithParams(sql string, params []interface{}) string {

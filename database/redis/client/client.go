@@ -60,7 +60,7 @@ var NewClient = func(addr *util.DBAddress) Client {
 func (c *redisCli) Do(ctx context.Context, cmd string, args ...interface{}) (rsp interface{}, err error) {
 	conn, err := c.pool.GetContext(ctx)
 	if err != nil {
-		return nil, errs.NewDBError(errs.ErrClientTimeout, err.Error())
+		return nil, errs.NewDB(errs.ErrClientTimeout, err.Error())
 	}
 
 	defer conn.Close()
@@ -84,14 +84,14 @@ func (c *redisCli) Do(ctx context.Context, cmd string, args ...interface{}) (rsp
 		if e, ok := err.(net.Error); ok {
 			if e.Timeout() {
 				msg := fmt.Sprintf("%s, cost:%s", e.Error(), cost)
-				return nil, errs.NewDBError(errs.ErrClientTimeout, msg)
+				return nil, errs.NewDB(errs.ErrClientTimeout, msg)
 			}
 
 			if strings.Contains(err.Error(), "connection refused") {
-				return nil, errs.NewDBError(errs.ErrClientConnect, err.Error())
+				return nil, errs.NewDB(errs.ErrClientConnect, err.Error())
 			}
 		}
-		return nil, errs.NewDBError(errs.ErrRedisDo, err.Error())
+		return nil, errs.NewDB(errs.ErrRedisDo, err.Error())
 	}
 
 	return reply, nil
