@@ -17,72 +17,59 @@ package sql
 import (
 	"time"
 
+	"github.com/horm-database/common/structs"
 	"github.com/horm-database/common/types"
 )
 
-const (
-	TypeInt = iota
-	TypeInt8
-	TypeInt16
-	TypeInt32
-	TypeInt64
-	TypeUInt
-	TypeUInt8
-	TypeUInt16
-	TypeUInt32
-	TypeUInt64
-	TypeFloat32
-	TypeFloat64
-	TypeString
-	TypeTime
-	TypeBytes
-	TypeJSON
-)
-
-var MySQLTypeMap = map[string]int8{
-	"INT":       TypeInt,
-	"TINYINT":   TypeInt8,
-	"SMALLINT":  TypeInt16,
-	"MEDIUMINT": TypeInt32,
-	"BIGINT":    TypeInt64,
-	"BIT":       TypeBytes,
-	"FLOAT":     TypeFloat32,
-	"DOUBLE":    TypeFloat64,
-	"DECIMAL":   TypeFloat64,
-	"VARCHAR":   TypeString,
-	"CHAR":      TypeString,
-	"TEXT":      TypeString,
-	"BLOB":      TypeBytes,
-	"BINARY":    TypeBytes,
-	"VARBINARY": TypeBytes,
-	"TIME":      TypeString,
-	"DATE":      TypeTime,
-	"DATETIME":  TypeTime,
-	"TIMESTAMP": TypeTime,
-	"JSON":      TypeJSON,
+var MySQLTypeMap = map[string]structs.Type{
+	"INT":                structs.TypeInt,
+	"TINYINT":            structs.TypeInt8,
+	"SMALLINT":           structs.TypeInt16,
+	"MEDIUMINT":          structs.TypeInt32,
+	"BIGINT":             structs.TypeInt64,
+	"UNSIGNED INT":       structs.TypeUint,
+	"UNSIGNED TINYINT":   structs.TypeUint8,
+	"UNSIGNED SMALLINT":  structs.TypeUint16,
+	"UNSIGNED MEDIUMINT": structs.TypeUint32,
+	"UNSIGNED BIGINT":    structs.TypeUint64,
+	"BIT":                structs.TypeBytes,
+	"FLOAT":              structs.TypeFloat,
+	"DOUBLE":             structs.TypeDouble,
+	"DECIMAL":            structs.TypeDouble,
+	"VARCHAR":            structs.TypeString,
+	"CHAR":               structs.TypeString,
+	"TEXT":               structs.TypeString,
+	"BLOB":               structs.TypeBytes,
+	"BINARY":             structs.TypeBytes,
+	"VARBINARY":          structs.TypeBytes,
+	"TIME":               structs.TypeString,
+	"DATE":               structs.TypeTime,
+	"DATETIME":           structs.TypeTime,
+	"TIMESTAMP":          structs.TypeTime,
+	"JSON":               structs.TypeJSON,
 }
 
-var ClickHouseTypeMap = map[string]int8{
-	"Int":         TypeInt,
-	"Int8":        TypeInt8,
-	"Int16":       TypeInt16,
-	"Int32":       TypeInt32,
-	"Int64":       TypeInt64,
-	"UInt":        TypeUInt,
-	"UInt8":       TypeUInt8,
-	"UInt16":      TypeUInt16,
-	"UInt32":      TypeUInt32,
-	"UInt64":      TypeUInt64,
-	"Float":       TypeFloat32,
-	"Float32":     TypeFloat32,
-	"Float64":     TypeFloat64,
-	"Decimal":     TypeFloat64,
-	"String":      TypeString,
-	"FixedString": TypeString,
-	"UUID":        TypeString,
-	"DateTime":    TypeTime,
-	"DateTime64":  TypeTime,
-	"Date":        TypeTime,
+var ClickHouseTypeMap = map[string]structs.Type{
+	"Int":         structs.TypeInt,
+	"Int8":        structs.TypeInt8,
+	"Int16":       structs.TypeInt16,
+	"Int32":       structs.TypeInt32,
+	"Int64":       structs.TypeInt64,
+	"UInt":        structs.TypeUint,
+	"UInt8":       structs.TypeUint8,
+	"UInt16":      structs.TypeUint16,
+	"UInt32":      structs.TypeUint32,
+	"UInt64":      structs.TypeUint64,
+	"Float":       structs.TypeFloat,
+	"Float32":     structs.TypeFloat,
+	"Float64":     structs.TypeDouble,
+	"Decimal":     structs.TypeDouble,
+	"String":      structs.TypeString,
+	"FixedString": structs.TypeString,
+	"UUID":        structs.TypeString,
+	"DateTime":    structs.TypeTime,
+	"DateTime64":  structs.TypeTime,
+	"Date":        structs.TypeTime,
 }
 
 // NullString 数据库 varchar NULL 类型
