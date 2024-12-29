@@ -26,8 +26,6 @@ import (
 	"github.com/horm-database/orm/log"
 )
 
-var defaultTimeLayout = "2006-01-02 15:04:05 -0700 MST" // time.Parse 解析数据库时间字段到 NullTime 时的 layout，默认格式: "2006-01-02 15:04:05 -0700 MST"
-
 var loc *time.Location // 时区位置
 
 // SetLocation 慎重使用，此处影响的是全局的 NullTime 时间 logic 的时区

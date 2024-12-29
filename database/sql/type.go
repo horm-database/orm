@@ -170,47 +170,14 @@ func (ns *NullFloat) Scan(value interface{}) error {
 }
 
 // Scan NullTime 类型实现 mysql 引擎查询赋值接口，
-func (ns *NullTime) Scan(value interface{}) error {
+func (ns *NullTime) Scan(value interface{}) (err error) {
 	if value == nil {
 		ns.IsNull = true
 		return nil
 	}
 
-	ns.Time = time.Time{}
-
-	if ret, ok := value.(time.Time); ok {
-		ns.Time = ret
-		return nil
-	}
-
-	if ret, ok := value.(*time.Time); ok {
-		ns.Time = *ret
-		return nil
-	}
-
-	tmp := types.InterfaceToString(value)
-	if tmp == "" {
-		return nil
-	}
-
-	var i time.Time
-	var err error
-
-	if ns.TimeLayout == "" {
-		ns.TimeLayout = defaultTimeLayout
-	}
-
-	if loc != nil {
-		i, err = time.ParseInLocation(ns.TimeLayout, tmp, loc)
-	} else {
-		i, err = time.Parse(ns.TimeLayout, tmp)
-	}
-
-	if err == nil {
-		ns.Time = i
-	}
-
-	return nil
+	ns.Time, err = types.ParseTime(value, ns.TimeLayout, loc)
+	return err
 }
 
 // mysql 类型转化为 golang 结构体
@@ -244,11 +211,11 @@ var typeMysqlToStruct = map[string]string{
 	"tinyblob":           "[]byte",
 	"mediumblob":         "[]byte",
 	"longblob":           "[]byte",
+	"binary":             "[]byte",
+	"varbinary":          "[]byte",
 	"time":               "string",
 	"date":               "time.Time",
 	"datetime":           "time.Time",
 	"timestamp":          "time.Time",
-	"binary":             "[]byte",
-	"varbinary":          "[]byte",
 	"json":               "interface{}",
 }
