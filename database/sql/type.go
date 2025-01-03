@@ -176,7 +176,7 @@ func (ns *NullTime) Scan(value interface{}) (err error) {
 		return nil
 	}
 
-	ns.Time, err = types.ParseTime(value, ns.TimeLayout, loc)
+	ns.Time, err = types.ParseTime(value, loc, ns.TimeLayout)
 	return err
 }
 
