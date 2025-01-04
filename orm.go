@@ -119,7 +119,7 @@ func (o *ORM) Exec(ctx context.Context, retReceiver ...interface{}) (isNil bool,
 	err = o.query.GetCoder().Decode(o.query.ResultType, ret, retReceiver)
 	if err != nil {
 		return false, errs.Newf(errs.ErrClientDecode,
-			"[request_id=%d] %v, result=[%s]", o.query.RequestID, err, types.InterfaceToString(ret))
+			"[request_id=%d] %v, result=[%s]", o.query.RequestID, err, types.ToString(ret))
 	}
 
 	return isNil, nil

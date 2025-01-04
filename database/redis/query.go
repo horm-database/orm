@@ -125,7 +125,7 @@ func (r *Redis) Do(ctx context.Context) (interface{}, bool, error) {
 			if err == nil {
 				var mapRet = make(map[string]string, len(r.Args))
 				for k, arg := range r.Args {
-					mapRet[types.InterfaceToString(arg)] = strs[k]
+					mapRet[types.ToString(arg)] = strs[k]
 				}
 				ret = mapRet
 			}

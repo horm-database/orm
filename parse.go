@@ -120,7 +120,7 @@ func ParseResult(node *obj.Tree) (bool, interface{}, error) {
 		if node.Result == nil {
 			result.Data = []interface{}{}
 		} else {
-			result.Data, _ = types.InterfaceToArray(node.Result)
+			result.Data, _ = types.ToArray(node.Result)
 		}
 		return node.IsNil, result, nil
 	}

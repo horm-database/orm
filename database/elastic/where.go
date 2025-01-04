@@ -202,7 +202,7 @@ func esWhereImplode(key string, value interface{}, connector string) (int8, EsFi
 				if value == nil {
 					return BoolTypeFilter, esv7.NewExistsQuery(column), nil
 				} else if types.IsArray(rv) {
-					vArr, _ := types.InterfaceToArray(value)
+					vArr, _ := types.ToArray(value)
 					return BoolTypeMustNot, esv7.NewTermsQuery(column, vArr...), nil
 				} else {
 					return BoolTypeMustNot, esv7.NewTermsQuery(column, value), nil
@@ -211,7 +211,7 @@ func esWhereImplode(key string, value interface{}, connector string) (int8, EsFi
 				if value == nil {
 					return BoolTypeShould, esv7.NewExistsQuery(column), nil
 				} else if types.IsArray(rv) {
-					vArr, err := types.InterfaceToArray(value)
+					vArr, err := types.ToArray(value)
 					if err != nil {
 						return BoolTypeFilter, nil, err
 					}
@@ -225,7 +225,7 @@ func esWhereImplode(key string, value interface{}, connector string) (int8, EsFi
 			var matchQuery esv7.Query
 
 			if types.IsArray(rv) {
-				vArr, _ := types.InterfaceToArray(value)
+				vArr, _ := types.ToArray(value)
 				matchQuerys := []esv7.Query{}
 				for _, val := range vArr {
 					tmpQuery := getMatch(operator, column, subOperator, minShouldMatch, matchType, boost, slop, val)
@@ -259,7 +259,7 @@ func esWhereImplode(key string, value interface{}, connector string) (int8, EsFi
 					return BoolTypeShould, esv7.NewBoolQuery().MustNot(esv7.NewExistsQuery(column)), nil
 				}
 			} else if types.IsArray(rv) {
-				arrV, _ := types.InterfaceToArray(value)
+				arrV, _ := types.ToArray(value)
 				return boolType, esv7.NewTermsQuery(column, arrV...), nil
 			} else {
 				return boolType, esv7.NewTermsQuery(column, value), nil

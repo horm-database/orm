@@ -116,7 +116,7 @@ func (ns *NullString) Scan(value interface{}) error {
 		return nil
 	}
 
-	ns.String = types.InterfaceToString(value)
+	ns.String = types.ToString(value)
 
 	return nil
 }
@@ -128,7 +128,7 @@ func (ns *NullInt) Scan(value interface{}) error {
 		return nil
 	}
 
-	i64, err := types.InterfaceToInt64(value)
+	i64, err := types.ToInt64(value)
 	ns.Int = i64
 	return err
 }
@@ -140,7 +140,7 @@ func (ns *NullUint) Scan(value interface{}) error {
 		return nil
 	}
 
-	ui64, err := types.InterfaceToUint64(value)
+	ui64, err := types.ToUint64(value)
 	ns.Uint = ui64
 	return err
 }
@@ -152,7 +152,7 @@ func (ns *NullBool) Scan(value interface{}) error {
 		return nil
 	}
 
-	ns.Bool = types.InterfaceToBool(value)
+	ns.Bool = types.ToBool(value)
 	return nil
 }
 
@@ -163,7 +163,7 @@ func (ns *NullFloat) Scan(value interface{}) error {
 		return nil
 	}
 
-	f64, err := types.InterfaceToFloat64(value)
+	f64, err := types.ToFloat64(value)
 	ns.Float = f64
 
 	return err

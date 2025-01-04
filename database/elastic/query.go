@@ -112,10 +112,10 @@ func (q *Query) Query(ctx context.Context) (interface{}, *proto.Detail, bool, er
 			switch val := id.(type) {
 			case []interface{}:
 				for _, v := range val {
-					esIds = append(esIds, types.InterfaceToString(v))
+					esIds = append(esIds, types.ToString(v))
 				}
 			default:
-				esIds = append(esIds, types.InterfaceToString(id))
+				esIds = append(esIds, types.ToString(id))
 			}
 		}
 	}
