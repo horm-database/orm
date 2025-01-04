@@ -129,7 +129,7 @@ func (q *Query) Query(ctx context.Context) (interface{}, *proto.Detail, bool, er
 				return q.insert(ctx, q.OP, esIds[0])
 			}
 		} else {
-			return q.bulkInsert(ctx, q.OP)
+			return q.bulkInsert(ctx, q.OP, esIds)
 		}
 	case consts.OpUpdate:
 		if len(esIds) > 0 {

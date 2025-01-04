@@ -68,7 +68,8 @@ func (q *Query) insert(ctx context.Context, op, id string) (*proto.ModRet, *prot
 }
 
 // 批量插入新数据，（V7 SDK 版本兼容 V6 操作）
-func (q *Query) bulkInsert(ctx context.Context, op string) ([]*proto.ModRet, *proto.Detail, bool, error) {
+func (q *Query) bulkInsert(ctx context.Context, op string,
+	esIds []string) ([]*proto.ModRet, *proto.Detail, bool, error) {
 	opts := []esv7.ClientOptionFunc{esv7.SetTraceLog(q)}
 	clientV7, err := client.NewClientV7(false, q.Addr, opts...)
 	if err != nil {
@@ -76,13 +77,16 @@ func (q *Query) bulkInsert(ctx context.Context, op string) ([]*proto.ModRet, *pr
 	}
 
 	bulkService := clientV7.Bulk().Index(q.Index[0]).Type(q.Type).Refresh(q.Refresh)
-	for _, v := range q.Datas {
+	l := len(q.Datas)
+	for k, v := range q.Datas {
 		doc := esv7.NewBulkIndexRequest()
 
 		_id, _ := types.GetString(v, "_id")
 		if _id != "" {
 			doc.Id(_id)
 			delete(v, "_id")
+		} else if len(esIds) == l {
+			doc.Id(esIds[k])
 		}
 
 		if op == consts.OpInsert {
