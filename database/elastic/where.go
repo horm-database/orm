@@ -163,7 +163,7 @@ func esWhereImplode(key string, value interface{}, connector string) (int8, EsFi
 		}
 	}
 
-	column, operator, subOperator, matchType, minShouldMatch, boost, slop := util.OperatorMatch(key, true)
+	column, operator, opAttr, minShouldMatch, boost, slop := util.OperatorMatch(key, true)
 
 	var boolType int8 = BoolTypeFilter
 	if connector == consts.OR {
@@ -228,14 +228,14 @@ func esWhereImplode(key string, value interface{}, connector string) (int8, EsFi
 				vArr, _ := types.ToArray(value)
 				matchQuerys := []esv7.Query{}
 				for _, val := range vArr {
-					tmpQuery := getMatch(operator, column, subOperator, minShouldMatch, matchType, boost, slop, val)
+					tmpQuery := getMatch(operator, column, opAttr, minShouldMatch, boost, slop, val)
 
 					matchQuerys = append(matchQuerys, tmpQuery)
 				}
 
 				matchQuery = esv7.NewBoolQuery().Should(matchQuerys...)
 			} else {
-				matchQuery = getMatch(operator, column, subOperator, minShouldMatch, matchType, boost, slop, value)
+				matchQuery = getMatch(operator, column, opAttr, minShouldMatch, boost, slop, value)
 			}
 
 			if connector == consts.AND {
@@ -270,8 +270,8 @@ func esWhereImplode(key string, value interface{}, connector string) (int8, EsFi
 	return BoolTypeFilter, nil, nil
 }
 
-func getMatch(operator, column, subOperator, minShouldMatch,
-	matchType string, boost float64, slop int, value interface{}) EsFilter {
+func getMatch(operator, column, opAttr, minShouldMatch string,
+	boost float64, slop int, value interface{}) EsFilter {
 	switch operator {
 	case consts.OPMatchPhrase, consts.OPNotMatchPhrase:
 		matchPhraseQuery := esv7.NewMatchPhraseQuery(column, value)
@@ -285,18 +285,18 @@ func getMatch(operator, column, subOperator, minShouldMatch,
 		return matchPhraseQuery
 	case consts.OPMatch, consts.OPNotMatch:
 		matchQuery := esv7.NewMatchQuery(column, value)
+		if opAttr != "" {
+			matchQuery.Operator(opAttr)
+		}
 		if boost > 0 {
 			matchQuery.Boost(boost)
-		}
-		if subOperator != "" {
-			matchQuery.Operator(subOperator)
 		}
 		if minShouldMatch != "" {
 			matchQuery.MinimumShouldMatch(minShouldMatch)
 		}
 		return matchQuery
 	default:
-		switch matchType {
+		switch opAttr {
 		case "wildcard":
 			return esv7.NewWildcardQuery(column, value.(string))
 		case "regexp":

@@ -394,7 +394,7 @@ func (s *Statement) whereImplode(dbType int, index *int, i int, key string, valu
 		return
 	}
 
-	column, operator, _, _, _, _, _ := util.OperatorMatch(key, false)
+	column, operator, _, _, _, _ := util.OperatorMatch(key, false)
 
 	if operator == "FUNC" { //函数
 		s.condBuilder.WriteString(" ")
