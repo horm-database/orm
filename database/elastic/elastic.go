@@ -37,7 +37,12 @@ func (q *Query) insert(ctx context.Context, op, id string) (*proto.ModRet, *prot
 		return nil, nil, false, q.formatError("insert.NewClient", "", nil, err)
 	}
 
-	queryV7 := clientV7.Index().Index(q.Index[0]).Type(q.Type).BodyJson(q.Data).Refresh(q.Refresh)
+	qType := q.Type
+	if q.Addr.Version == ElasticV7 && qType == "" {
+		qType = "_doc"
+	}
+
+	queryV7 := clientV7.Index().Index(q.Index[0]).Type(qType).BodyJson(q.Data).Refresh(q.Refresh)
 
 	if id != "" {
 		queryV7.Id(id)
@@ -76,7 +81,12 @@ func (q *Query) bulkInsert(ctx context.Context, op string,
 		return nil, nil, false, q.formatError("bulkInsert.NewClient", "", nil, err)
 	}
 
-	bulkService := clientV7.Bulk().Index(q.Index[0]).Type(q.Type).Refresh(q.Refresh)
+	qType := q.Type
+	if q.Addr.Version == ElasticV7 && qType == "" {
+		qType = "_doc"
+	}
+
+	bulkService := clientV7.Bulk().Index(q.Index[0]).Type(qType).Refresh(q.Refresh)
 	l := len(q.Datas)
 	for k, v := range q.Datas {
 		doc := esv7.NewBulkIndexRequest()
@@ -158,7 +168,12 @@ func (q *Query) updateByID(ctx context.Context, id string) (*proto.ModRet, *prot
 		script = q.getScriptFromData()
 	}
 
-	retV7, err = clientV7.Update().Index(q.Index[0]).Type(q.Type).Id(id).Refresh(q.Refresh).
+	qType := q.Type
+	if q.Addr.Version == ElasticV7 && qType == "" {
+		qType = "_doc"
+	}
+
+	retV7, err = clientV7.Update().Index(q.Index[0]).Type(qType).Id(id).Refresh(q.Refresh).
 		Script(esv7.NewScript(script).Type(scriptType).Params(q.Data)).Do(ctx)
 
 	if err != nil {
@@ -265,7 +280,12 @@ func (q *Query) deleteByQuery(ctx context.Context) (*proto.ModRet, *proto.Detail
 		return nil, nil, false, q.formatError("deleteByQuery.esWhere", "", nil, err)
 	}
 
-	retV7, err := clientV7.DeleteByQuery(q.Index...).Type(q.Type).Refresh(q.Refresh).Query(esFilter).Do(ctx)
+	qType := q.Type
+	if q.Addr.Version == ElasticV7 && qType == "" {
+		qType = "_doc"
+	}
+
+	retV7, err := clientV7.DeleteByQuery(q.Index...).Type(qType).Refresh(q.Refresh).Query(esFilter).Do(ctx)
 
 	if err != nil {
 		return nil, nil, false, q.logError("deleteByQuery", "", esFilter, err)
