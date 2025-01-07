@@ -120,6 +120,10 @@ func (q *Query) Query(ctx context.Context) (interface{}, *proto.Detail, bool, er
 		}
 	}
 
+	if q.Type == "" {
+		q.Type = "_doc"
+	}
+
 	switch q.OP {
 	case consts.OpInsert, consts.OpReplace:
 		if len(q.Datas) == 0 {

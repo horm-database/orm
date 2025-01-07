@@ -32,17 +32,11 @@ import (
 func (q *Query) insert(ctx context.Context, op, id string) (*proto.ModRet, *proto.Detail, bool, error) {
 	opts := []esv7.ClientOptionFunc{esv7.SetTraceLog(q)}
 	clientV7, err := client.NewClientV7(false, q.Addr, opts...)
-
 	if err != nil {
 		return nil, nil, false, q.formatError("insert.NewClient", "", nil, err)
 	}
 
-	qType := q.Type
-	if q.Addr.Version == ElasticV7 && qType == "" {
-		qType = "_doc"
-	}
-
-	queryV7 := clientV7.Index().Index(q.Index[0]).Type(qType).BodyJson(q.Data).Refresh(q.Refresh)
+	queryV7 := clientV7.Index().Index(q.Index[0]).Type(q.Type).BodyJson(q.Data).Refresh(q.Refresh)
 
 	if id != "" {
 		queryV7.Id(id)
@@ -81,12 +75,7 @@ func (q *Query) bulkInsert(ctx context.Context, op string,
 		return nil, nil, false, q.formatError("bulkInsert.NewClient", "", nil, err)
 	}
 
-	qType := q.Type
-	if q.Addr.Version == ElasticV7 && qType == "" {
-		qType = "_doc"
-	}
-
-	bulkService := clientV7.Bulk().Index(q.Index[0]).Type(qType).Refresh(q.Refresh)
+	bulkService := clientV7.Bulk().Index(q.Index[0]).Type(q.Type).Refresh(q.Refresh)
 	l := len(q.Datas)
 	for k, v := range q.Datas {
 		doc := esv7.NewBulkIndexRequest()
@@ -168,12 +157,7 @@ func (q *Query) updateByID(ctx context.Context, id string) (*proto.ModRet, *prot
 		script = q.getScriptFromData()
 	}
 
-	qType := q.Type
-	if q.Addr.Version == ElasticV7 && qType == "" {
-		qType = "_doc"
-	}
-
-	retV7, err = clientV7.Update().Index(q.Index[0]).Type(qType).Id(id).Refresh(q.Refresh).
+	retV7, err = clientV7.Update().Index(q.Index[0]).Type(q.Type).Id(id).Refresh(q.Refresh).
 		Script(esv7.NewScript(script).Type(scriptType).Params(q.Data)).Do(ctx)
 
 	if err != nil {
@@ -280,12 +264,7 @@ func (q *Query) deleteByQuery(ctx context.Context) (*proto.ModRet, *proto.Detail
 		return nil, nil, false, q.formatError("deleteByQuery.esWhere", "", nil, err)
 	}
 
-	qType := q.Type
-	if q.Addr.Version == ElasticV7 && qType == "" {
-		qType = "_doc"
-	}
-
-	retV7, err := clientV7.DeleteByQuery(q.Index...).Type(qType).Refresh(q.Refresh).Query(esFilter).Do(ctx)
+	retV7, err := clientV7.DeleteByQuery(q.Index...).Type(q.Type).Refresh(q.Refresh).Query(esFilter).Do(ctx)
 
 	if err != nil {
 		return nil, nil, false, q.logError("deleteByQuery", "", esFilter, err)
