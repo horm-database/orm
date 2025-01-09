@@ -68,7 +68,7 @@ type Query struct {
 }
 
 func (q *Query) SetParams(req *plugin.Request,
-	prop *obj.Property, addr *util.DBAddress, transInfo *obj.TransInfo) error {
+	prop *obj.Property, addr *util.DBAddress, transInfo *obj.TransInfo) (err error) {
 	q.OP = req.Op
 	q.Index = req.Tables
 	q.Type = req.Type
@@ -94,7 +94,10 @@ func (q *Query) SetParams(req *plugin.Request,
 
 	q.Routing, _ = req.Params.GetString("routing")
 
-	q.HighLight = getHighLightParam(req.Params)
+	q.HighLight, err = getHighLightParam(req.Params)
+	if err != nil {
+		return err
+	}
 
 	q.Params = req.Params
 	return nil

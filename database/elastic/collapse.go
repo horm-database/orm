@@ -27,7 +27,7 @@ func getCollapse(params types.Map) (*esv7.CollapseBuilder, error) {
 		return nil, errors.New("[collapse] is not map")
 	}
 
-	if ok {
+	if ok && collapse != nil {
 		collapseField, _ := collapse.GetString("field")
 		if collapseField == "" {
 			return nil, errors.New("collapse`s param field is empty")

@@ -17,6 +17,7 @@ package elastic
 import (
 	"fmt"
 
+	"github.com/horm-database/common/errs"
 	"github.com/horm-database/common/types"
 	esv7 "github.com/olivere/elastic/v7"
 )
@@ -26,29 +27,42 @@ type HighLight struct {
 	Fields  []string `json:"fields,omitempty"`   // 要加高亮的字段
 	PreTag  string   `json:"pre_tag,omitempty"`  // 高亮前标签
 	PostTag string   `json:"post_tag,omitempty"` // 高亮后标签
+	Replace bool     `json:"replace,omitempty"`  // 是否用高亮文本替换原字段数据
 }
 
-func getHighLightParam(params types.Map) *HighLight {
+func getHighLightParam(params types.Map) (*HighLight, error) {
 	highLight, ok, err := params.GetMap("highlight")
-	if ok && err != nil && highLight != nil {
+	if err != nil {
+		return nil, errs.Newf(errs.ErrParamInvalid, "get highlight from params error: %v", err)
+	}
+
+	if ok && highLight != nil {
 		fields, _, _ := highLight.GetStringArray("fields")
 		preTag, _ := highLight.GetString("pre_tag")
 		postTag, _ := highLight.GetString("post_tag")
+		replace, _ := highLight.GetBool("replace")
 
 		return &HighLight{
 			Fields:  fields,
 			PreTag:  preTag,
 			PostTag: postTag,
-		}
+			Replace: replace,
+		}, nil
 	}
 
-	return nil
+	return nil, nil
 }
 
-func highLightResultHandle(data map[string]interface{}, hitHighLight map[string][]string) {
+func highLightResultHandle(data map[string]interface{}, hitHighLight map[string][]string, highLight *HighLight) {
 	if len(hitHighLight) > 0 {
 		for k, v := range hitHighLight {
-			key := fmt.Sprintf("highlight_%s", k)
+			var key string
+			if highLight != nil && highLight.Replace {
+				key = k
+			} else {
+				key = fmt.Sprintf("highlight_%s", k)
+			}
+
 			data[key] = v
 		}
 	}

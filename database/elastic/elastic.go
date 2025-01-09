@@ -314,9 +314,9 @@ func (q *Query) search(ctx context.Context) ([]map[string]interface{}, *proto.De
 	q.logInfo("search", "", searchSource)
 
 	if retV6 != nil {
-		return formatSearchResultV6(retV6, retV6.Hits, q.Page, q.Size, q.Scroll)
+		return formatSearchResultV6(retV6, retV6.Hits, q.Page, q.Size, q.Scroll, q.HighLight)
 	} else {
-		return formatSearchResultV7(retV7, retV7.Hits, q.Page, q.Size, q.Scroll)
+		return formatSearchResultV7(retV7, retV7.Hits, q.Page, q.Size, q.Scroll, q.HighLight)
 	}
 }
 
@@ -379,9 +379,9 @@ func (q *Query) scrollByQuery(ctx context.Context) ([]map[string]interface{}, *p
 	q.logInfo("scrollByQuery", "", searchSource)
 
 	if retV6 != nil {
-		return formatSearchResultV6(retV6, retV6.Hits, q.Page, q.Size, q.Scroll)
+		return formatSearchResultV6(retV6, retV6.Hits, q.Page, q.Size, q.Scroll, q.HighLight)
 	} else {
-		return formatSearchResultV7(retV7, retV7.Hits, q.Page, q.Size, q.Scroll)
+		return formatSearchResultV7(retV7, retV7.Hits, q.Page, q.Size, q.Scroll, q.HighLight)
 	}
 }
 
@@ -418,9 +418,9 @@ func (q *Query) scrollByScrollID(ctx context.Context) ([]map[string]interface{},
 	q.logInfo("scrollByScrollID", q.Scroll.ID, nil)
 
 	if retV6 != nil {
-		return formatSearchResultV6(retV6, retV6.Hits, q.Page, q.Size, q.Scroll)
+		return formatSearchResultV6(retV6, retV6.Hits, q.Page, q.Size, q.Scroll, q.HighLight)
 	} else {
-		return formatSearchResultV7(retV7, retV7.Hits, q.Page, q.Size, q.Scroll)
+		return formatSearchResultV7(retV7, retV7.Hits, q.Page, q.Size, q.Scroll, q.HighLight)
 	}
 }
 
