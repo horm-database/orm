@@ -49,7 +49,7 @@ func (o *ORM) Refresh() *ORM {
 }
 
 // HighLight 返回高亮
-func (o *ORM) HighLight(fields []string, preTag, postTag string) *ORM {
-	o.query.HighLight(fields, preTag, postTag)
+func (o *ORM) HighLight(field string, preTag, postTag string) *ORM {
+	o.query.HighLight(field, preTag, postTag)
 	return o
 }

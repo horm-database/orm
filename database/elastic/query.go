@@ -52,7 +52,7 @@ type Query struct {
 	Script, ScriptType string
 	Source             string
 	Scroll             *proto.Scroll
-	HighLight          *HighLight
+	HighLights         []*HighLight
 
 	// Params
 	Params types.Map
@@ -94,7 +94,7 @@ func (q *Query) SetParams(req *plugin.Request,
 
 	q.Routing, _ = req.Params.GetString("routing")
 
-	q.HighLight, err = getHighLightParam(req.Params)
+	q.HighLights, err = getHighLightParam(req.Params)
 	if err != nil {
 		return err
 	}

@@ -24,61 +24,65 @@ import (
 
 // HighLight 返回结果高亮
 type HighLight struct {
-	Fields  []string `json:"fields,omitempty"`   // 要加高亮的字段
-	PreTag  string   `json:"pre_tag,omitempty"`  // 高亮前标签
-	PostTag string   `json:"post_tag,omitempty"` // 高亮后标签
-	Replace bool     `json:"replace,omitempty"`  // 是否用高亮文本替换原字段数据
+	Field   string `json:"field,omitempty"`    // 要加高亮的字段
+	PreTag  string `json:"pre_tag,omitempty"`  // 高亮前标签
+	PostTag string `json:"post_tag,omitempty"` // 高亮后标签
+	Replace bool   `json:"replace,omitempty"`  // 是否替换原字段，就是原字段内容不返回，只返回带标签的内容，减少内容大小。默认为 false
 }
 
-func getHighLightParam(params types.Map) (*HighLight, error) {
-	highLight, ok, err := params.GetMap("highlight")
+func getHighLightParam(params types.Map) ([]*HighLight, error) {
+	highLights, ok, err := params.GetMapArray("highlights")
 	if err != nil {
 		return nil, errs.Newf(errs.ErrParamInvalid, "get highlight from params error: %v", err)
 	}
 
-	if ok && highLight != nil {
-		fields, _, _ := highLight.GetStringArray("fields")
-		preTag, _ := highLight.GetString("pre_tag")
-		postTag, _ := highLight.GetString("post_tag")
-		replace, _ := highLight.GetBool("replace")
+	if ok && len(highLights) > 0 {
+		ret := []*HighLight{}
 
-		return &HighLight{
-			Fields:  fields,
-			PreTag:  preTag,
-			PostTag: postTag,
-			Replace: replace,
-		}, nil
+		for _, highLight := range highLights {
+			field, _ := highLight.GetString("field")
+			preTag, _ := highLight.GetString("pre_tag")
+			postTag, _ := highLight.GetString("post_tag")
+			replace, _ := highLight.GetBool("replace")
+			ret = append(ret, &HighLight{
+				Field:   field,
+				PreTag:  preTag,
+				PostTag: postTag,
+				Replace: replace,
+			})
+		}
+
+		return ret, nil
 	}
 
 	return nil, nil
 }
 
-func highLightResultHandle(data map[string]interface{}, hitHighLight map[string][]string, highLight *HighLight) {
+func highLightResultHandle(data map[string]interface{}, hitHighLight map[string][]string, highLights []*HighLight) {
 	if len(hitHighLight) > 0 {
-		for k, v := range hitHighLight {
-			var key string
-			if highLight != nil && highLight.Replace {
-				key = k
-			} else {
-				key = fmt.Sprintf("highlight_%s", k)
+		for _, highLight := range highLights {
+			key := fmt.Sprintf("highlight_%s", highLight.Field)
+			if v, ok := hitHighLight[highLight.Field]; ok {
+				if highLight.Replace {
+					delete(data, highLight.Field)
+				}
+				data[key] = v
 			}
-
-			data[key] = v
 		}
 	}
 }
 
-func getHighLight(highLight *HighLight) *esv7.Highlight {
+func getHighLight(highLights []*HighLight) *esv7.Highlight {
 	fields := []*esv7.HighlighterField{}
-	for _, field := range highLight.Fields {
-		fields = append(fields, esv7.NewHighlighterField(field))
+	for _, highLight := range highLights {
+		h := esv7.NewHighlighterField(highLight.Field)
+		h.PreTags(highLight.PreTag)
+		h.PostTags(highLight.PostTag)
+
+		fields = append(fields, h)
 	}
 
 	h := esv7.NewHighlight().Fields(fields...)
-
-	if highLight.PreTag != "" && highLight.PostTag != "" {
-		h.PreTags(highLight.PreTag).PostTags(highLight.PostTag)
-	}
 
 	return h
 }

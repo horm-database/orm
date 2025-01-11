@@ -34,8 +34,8 @@ func (q *Query) getSearchSource() (interface{}, error) {
 		searchSource.FetchSourceContext(esv7.NewFetchSourceContext(true).Include(q.Column...))
 	}
 
-	if q.HighLight != nil && len(q.HighLight.Fields) > 0 {
-		searchSource.Highlight(getHighLight(q.HighLight))
+	if q.HighLights != nil && len(q.HighLights) > 0 {
+		searchSource.Highlight(getHighLight(q.HighLights))
 	}
 
 	esFilter, err := esWhere(q.Where)
@@ -74,7 +74,7 @@ func (q *Query) getSearchSource() (interface{}, error) {
 }
 
 func formatSearchResultV6(res *esv6.SearchResult, hits *esv6.SearchHits, page, size int,
-	scroll *proto.Scroll, highLight *HighLight) ([]map[string]interface{}, *proto.Detail, bool, error) {
+	scroll *proto.Scroll, highLights []*HighLight) ([]map[string]interface{}, *proto.Detail, bool, error) {
 	var result []map[string]interface{}
 
 	for _, hit := range hits.Hits {
@@ -98,7 +98,7 @@ func formatSearchResultV6(res *esv6.SearchResult, hits *esv6.SearchHits, page, s
 
 		if len(hit.InnerHits) > 0 {
 			for name, innerHit := range hit.InnerHits {
-				innerRet, detail, _, err := formatSearchResultV6(nil, innerHit.Hits, 0, 0, nil, highLight)
+				innerRet, detail, _, err := formatSearchResultV6(nil, innerHit.Hits, 0, 0, nil, highLights)
 				if err != nil {
 					return nil, nil, false, err
 				}
@@ -110,7 +110,7 @@ func formatSearchResultV6(res *esv6.SearchResult, hits *esv6.SearchHits, page, s
 			}
 		}
 
-		highLightResultHandle(data, hit.Highlight, highLight)
+		highLightResultHandle(data, hit.Highlight, highLights)
 
 		result = append(result, data)
 	}
@@ -119,7 +119,7 @@ func formatSearchResultV6(res *esv6.SearchResult, hits *esv6.SearchHits, page, s
 }
 
 func formatSearchResultV7(res *esv7.SearchResult, hits *esv7.SearchHits, page, size int,
-	scroll *proto.Scroll, highLight *HighLight) ([]map[string]interface{}, *proto.Detail, bool, error) {
+	scroll *proto.Scroll, highLights []*HighLight) ([]map[string]interface{}, *proto.Detail, bool, error) {
 	var result []map[string]interface{}
 
 	for _, hit := range hits.Hits {
@@ -141,7 +141,7 @@ func formatSearchResultV7(res *esv7.SearchResult, hits *esv7.SearchHits, page, s
 
 		if len(hit.InnerHits) > 0 {
 			for name, innerHit := range hit.InnerHits {
-				innerRet, detail, _, err := formatSearchResultV7(nil, innerHit.Hits, 0, 0, nil, highLight)
+				innerRet, detail, _, err := formatSearchResultV7(nil, innerHit.Hits, 0, 0, nil, highLights)
 				if err != nil {
 					return nil, nil, false, err
 				}
@@ -153,7 +153,7 @@ func formatSearchResultV7(res *esv7.SearchResult, hits *esv7.SearchHits, page, s
 			}
 		}
 
-		highLightResultHandle(data, hit.Highlight, highLight)
+		highLightResultHandle(data, hit.Highlight, highLights)
 
 		result = append(result, data)
 	}
