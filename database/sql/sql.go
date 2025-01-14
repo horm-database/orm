@@ -21,7 +21,7 @@ import (
 
 	"github.com/horm-database/common/consts"
 	"github.com/horm-database/common/errs"
-	"github.com/horm-database/common/structs"
+	"github.com/horm-database/common/types"
 	"github.com/horm-database/orm/database/sql/client"
 )
 
@@ -182,7 +182,7 @@ func (q *Query) nextRow(rows *sql.Rows) (map[string]interface{}, error) {
 		typ := MySQLTypeMap[typeName]
 
 		switch typ {
-		case structs.TypeInt:
+		case types.TypeInt:
 			if nullable {
 				recv := NullInt{}
 				row[i] = &recv
@@ -190,7 +190,7 @@ func (q *Query) nextRow(rows *sql.Rows) (map[string]interface{}, error) {
 				var recv int
 				row[i] = &recv
 			}
-		case structs.TypeInt8:
+		case types.TypeInt8:
 			if nullable {
 				recv := NullInt{}
 				row[i] = &recv
@@ -198,7 +198,7 @@ func (q *Query) nextRow(rows *sql.Rows) (map[string]interface{}, error) {
 				var recv int8
 				row[i] = &recv
 			}
-		case structs.TypeInt16:
+		case types.TypeInt16:
 			if nullable {
 				recv := NullInt{}
 				row[i] = &recv
@@ -206,7 +206,7 @@ func (q *Query) nextRow(rows *sql.Rows) (map[string]interface{}, error) {
 				var recv int16
 				row[i] = &recv
 			}
-		case structs.TypeInt32:
+		case types.TypeInt32:
 			if nullable {
 				recv := NullInt{}
 				row[i] = &recv
@@ -214,7 +214,7 @@ func (q *Query) nextRow(rows *sql.Rows) (map[string]interface{}, error) {
 				var recv int32
 				row[i] = &recv
 			}
-		case structs.TypeInt64:
+		case types.TypeInt64:
 			if nullable {
 				recv := NullInt{}
 				row[i] = &recv
@@ -222,7 +222,7 @@ func (q *Query) nextRow(rows *sql.Rows) (map[string]interface{}, error) {
 				var recv int64
 				row[i] = &recv
 			}
-		case structs.TypeUint:
+		case types.TypeUint:
 			if nullable {
 				recv := NullUint{}
 				row[i] = &recv
@@ -230,7 +230,7 @@ func (q *Query) nextRow(rows *sql.Rows) (map[string]interface{}, error) {
 				var recv uint
 				row[i] = &recv
 			}
-		case structs.TypeUint8:
+		case types.TypeUint8:
 			if nullable {
 				recv := NullUint{}
 				row[i] = &recv
@@ -238,7 +238,7 @@ func (q *Query) nextRow(rows *sql.Rows) (map[string]interface{}, error) {
 				var recv uint8
 				row[i] = &recv
 			}
-		case structs.TypeUint16:
+		case types.TypeUint16:
 			if nullable {
 				recv := NullUint{}
 				row[i] = &recv
@@ -246,7 +246,7 @@ func (q *Query) nextRow(rows *sql.Rows) (map[string]interface{}, error) {
 				var recv uint16
 				row[i] = &recv
 			}
-		case structs.TypeUint32:
+		case types.TypeUint32:
 			if nullable {
 				recv := NullUint{}
 				row[i] = &recv
@@ -254,7 +254,7 @@ func (q *Query) nextRow(rows *sql.Rows) (map[string]interface{}, error) {
 				var recv uint32
 				row[i] = &recv
 			}
-		case structs.TypeUint64:
+		case types.TypeUint64:
 			if nullable {
 				recv := NullUint{}
 				row[i] = &recv
@@ -262,7 +262,7 @@ func (q *Query) nextRow(rows *sql.Rows) (map[string]interface{}, error) {
 				var recv uint64
 				row[i] = &recv
 			}
-		case structs.TypeFloat:
+		case types.TypeFloat:
 			if nullable {
 				recv := NullFloat{}
 				row[i] = &recv
@@ -270,7 +270,7 @@ func (q *Query) nextRow(rows *sql.Rows) (map[string]interface{}, error) {
 				var recv float32
 				row[i] = &recv
 			}
-		case structs.TypeDouble:
+		case types.TypeDouble:
 			if nullable {
 				recv := NullFloat{}
 				row[i] = &recv
@@ -278,7 +278,7 @@ func (q *Query) nextRow(rows *sql.Rows) (map[string]interface{}, error) {
 				var recv float64
 				row[i] = &recv
 			}
-		case structs.TypeString:
+		case types.TypeString:
 			if nullable {
 				recv := NullString{}
 				row[i] = &recv
@@ -286,7 +286,7 @@ func (q *Query) nextRow(rows *sql.Rows) (map[string]interface{}, error) {
 				var recv string
 				row[i] = &recv
 			}
-		case structs.TypeTime:
+		case types.TypeTime:
 			if nullable {
 				recv := NullTime{}
 				row[i] = &recv
@@ -295,10 +295,10 @@ func (q *Query) nextRow(rows *sql.Rows) (map[string]interface{}, error) {
 				row[i] = &recv
 			}
 
-		case structs.TypeBytes:
+		case types.TypeBytes:
 			var recv []byte
 			row[i] = &recv
-		case structs.TypeJSON:
+		case types.TypeJSON:
 			var recv NullString
 			row[i] = &recv
 		default:

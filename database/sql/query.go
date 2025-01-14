@@ -138,7 +138,10 @@ func (q *Query) Query(ctx context.Context) (interface{}, *proto.Detail, bool, er
 
 		result := proto.ModRet{
 			RowAffected: rowsAffected,
-			ID:          proto.ID(fmt.Sprint(lastInsertID)),
+		}
+
+		if q.OP == consts.OpInsert || q.OP == consts.OpReplace {
+			result.ID = proto.ID(fmt.Sprint(lastInsertID))
 		}
 
 		return &result, nil, false, nil

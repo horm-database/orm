@@ -26,7 +26,7 @@ import (
 	"github.com/horm-database/common/errs"
 	"github.com/horm-database/common/json"
 	"github.com/horm-database/common/log"
-	"github.com/horm-database/common/structs"
+	"github.com/horm-database/common/types"
 )
 
 // InsertToCK clickhouse 批量插入，（必须通过事务生成批量语句，然后提交）
@@ -212,7 +212,7 @@ func (q *Query) nextRowCK(rows *sql.Rows) (map[string]interface{}, error) {
 	for i := range columns {
 		var array bool
 		var tuple bool
-		var typ structs.Type
+		var typ types.Type
 
 		nullable, _ := colTypes[i].Nullable()
 		typName := colTypes[i].DatabaseTypeName()
@@ -231,7 +231,7 @@ func (q *Query) nextRowCK(rows *sql.Rows) (map[string]interface{}, error) {
 		}
 
 		if typName[0:3] == "Dec" { //Decimal
-			typ = structs.TypeDouble
+			typ = types.TypeDouble
 			typName = strings.TrimLeft(typName, "Decimal(")
 			typName = strings.TrimRight(typName, ")")
 			typNameArr := strings.Split(typName, ",")
@@ -240,15 +240,15 @@ func (q *Query) nextRowCK(rows *sql.Rows) (map[string]interface{}, error) {
 				decimalS[i] = math.Pow(10, float64(decimalTmp))
 			}
 		} else if typName[0:3] == "Fix" { //FixedString
-			typ = structs.TypeString
+			typ = types.TypeString
 		} else if tuple { //Tuple
-			typ = structs.TypeJSON
+			typ = types.TypeJSON
 		} else {
 			typ = ClickHouseTypeMap[typName]
 		}
 
 		switch typ {
-		case structs.TypeInt:
+		case types.TypeInt:
 			if nullable {
 				if array {
 					recv := []NullInt{}
@@ -266,7 +266,7 @@ func (q *Query) nextRowCK(rows *sql.Rows) (map[string]interface{}, error) {
 					row[i] = &recv
 				}
 			}
-		case structs.TypeInt8:
+		case types.TypeInt8:
 			if nullable {
 				if array {
 					recv := []NullInt{}
@@ -284,7 +284,7 @@ func (q *Query) nextRowCK(rows *sql.Rows) (map[string]interface{}, error) {
 					row[i] = &recv
 				}
 			}
-		case structs.TypeInt16:
+		case types.TypeInt16:
 			if nullable {
 				if array {
 					recv := []NullInt{}
@@ -302,7 +302,7 @@ func (q *Query) nextRowCK(rows *sql.Rows) (map[string]interface{}, error) {
 					row[i] = &recv
 				}
 			}
-		case structs.TypeInt32:
+		case types.TypeInt32:
 			if nullable {
 				if array {
 					recv := []NullInt{}
@@ -320,7 +320,7 @@ func (q *Query) nextRowCK(rows *sql.Rows) (map[string]interface{}, error) {
 					row[i] = &recv
 				}
 			}
-		case structs.TypeInt64:
+		case types.TypeInt64:
 			if nullable {
 				if array {
 					recv := []NullInt{}
@@ -338,7 +338,7 @@ func (q *Query) nextRowCK(rows *sql.Rows) (map[string]interface{}, error) {
 					row[i] = &recv
 				}
 			}
-		case structs.TypeUint:
+		case types.TypeUint:
 			if nullable {
 				if array {
 					recv := []NullUint{}
@@ -356,7 +356,7 @@ func (q *Query) nextRowCK(rows *sql.Rows) (map[string]interface{}, error) {
 					row[i] = &recv
 				}
 			}
-		case structs.TypeUint8:
+		case types.TypeUint8:
 			if nullable {
 				if array {
 					recv := []NullUint{}
@@ -374,7 +374,7 @@ func (q *Query) nextRowCK(rows *sql.Rows) (map[string]interface{}, error) {
 					row[i] = &recv
 				}
 			}
-		case structs.TypeUint16:
+		case types.TypeUint16:
 			if nullable {
 				if array {
 					recv := []NullUint{}
@@ -392,7 +392,7 @@ func (q *Query) nextRowCK(rows *sql.Rows) (map[string]interface{}, error) {
 					row[i] = &recv
 				}
 			}
-		case structs.TypeUint32:
+		case types.TypeUint32:
 			if nullable {
 				if array {
 					recv := []NullUint{}
@@ -410,7 +410,7 @@ func (q *Query) nextRowCK(rows *sql.Rows) (map[string]interface{}, error) {
 					row[i] = &recv
 				}
 			}
-		case structs.TypeUint64:
+		case types.TypeUint64:
 			if nullable {
 				if array {
 					recv := []NullUint{}
@@ -428,7 +428,7 @@ func (q *Query) nextRowCK(rows *sql.Rows) (map[string]interface{}, error) {
 					row[i] = &recv
 				}
 			}
-		case structs.TypeFloat:
+		case types.TypeFloat:
 			if nullable {
 				if array {
 					recv := []NullFloat{}
@@ -446,7 +446,7 @@ func (q *Query) nextRowCK(rows *sql.Rows) (map[string]interface{}, error) {
 					row[i] = &recv
 				}
 			}
-		case structs.TypeDouble:
+		case types.TypeDouble:
 			if nullable {
 				if array {
 					recv := []NullFloat{}
@@ -464,7 +464,7 @@ func (q *Query) nextRowCK(rows *sql.Rows) (map[string]interface{}, error) {
 					row[i] = &recv
 				}
 			}
-		case structs.TypeString:
+		case types.TypeString:
 			if nullable {
 				if array {
 					recv := []NullString{}
@@ -482,7 +482,7 @@ func (q *Query) nextRowCK(rows *sql.Rows) (map[string]interface{}, error) {
 					row[i] = &recv
 				}
 			}
-		case structs.TypeTime:
+		case types.TypeTime:
 			if nullable {
 				if array {
 					recv := []NullTime{}
@@ -500,7 +500,7 @@ func (q *Query) nextRowCK(rows *sql.Rows) (map[string]interface{}, error) {
 					row[i] = &recv
 				}
 			}
-		case structs.TypeBytes:
+		case types.TypeBytes:
 			if array {
 				var recv [][]byte
 				row[i] = &recv
