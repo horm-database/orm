@@ -15,14 +15,15 @@
 package sql
 
 import (
-	ej "encoding/json"
+	j "encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/horm-database/common/consts"
 	"github.com/horm-database/common/errs"
-	util2 "github.com/horm-database/common/json"
+	"github.com/horm-database/common/json"
+	"github.com/horm-database/common/types"
 	"github.com/horm-database/orm/log"
 )
 
@@ -65,65 +66,32 @@ func GetSQLWithParams(sql string, params []interface{}) string {
 				if params[paramsIndex] == nil {
 					result.WriteString("null")
 				} else {
-					switch v := params[paramsIndex].(type) {
+					val := types.Indirect(params[paramsIndex])
+					switch v := val.(type) {
 					case string:
 						result.WriteString("'")
 						result.WriteString(v)
-						result.WriteString("'")
-					case *string:
-						result.WriteString("'")
-						result.WriteString(*v)
 						result.WriteString("'")
 					case []byte:
 						result.WriteString("'")
 						result.Write(v)
 						result.WriteString("'")
-					case *[]byte:
-						result.WriteString("'")
-						result.Write(*v)
-						result.WriteString("'")
 					case bool:
 						result.WriteString(fmt.Sprintf("%v", v))
-					case *bool:
-						result.WriteString(fmt.Sprintf("%v", *v))
 					case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
 						result.WriteString(fmt.Sprintf("%d", v))
-					case *int:
-						result.WriteString(fmt.Sprintf("%d", *v))
-					case *int8:
-						result.WriteString(fmt.Sprintf("%v", *v))
-					case *int16:
-						result.WriteString(fmt.Sprintf("%v", *v))
-					case *int32:
-						result.WriteString(fmt.Sprintf("%v", *v))
-					case *int64:
-						result.WriteString(fmt.Sprintf("%v", *v))
-					case *uint:
-						result.WriteString(fmt.Sprintf("%v", *v))
-					case *uint8:
-						result.WriteString(fmt.Sprintf("%v", *v))
-					case *uint16:
-						result.WriteString(fmt.Sprintf("%v", *v))
-					case *uint32:
-						result.WriteString(fmt.Sprintf("%v", *v))
-					case *uint64:
-						result.WriteString(fmt.Sprintf("%v", *v))
 					case float32, float64:
 						result.WriteString(fmt.Sprintf("%f", v))
-					case *float32:
-						result.WriteString(fmt.Sprintf("%f", *v))
-					case *float64:
-						result.WriteString(fmt.Sprintf("%f", *v))
-					case ej.Number:
+					case j.Number:
 						result.WriteString("'")
 						result.WriteString(v.String())
 						result.WriteString("'")
-					case *ej.Number:
+					case time.Time:
 						result.WriteString("'")
-						result.WriteString(v.String())
+						result.WriteString(v.Format(time.RFC3339Nano))
 						result.WriteString("'")
 					default:
-						result.WriteString(util2.MarshalToString(v))
+						result.WriteString(json.MarshalToString(v))
 					}
 				}
 			} else {

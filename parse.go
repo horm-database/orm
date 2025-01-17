@@ -55,6 +55,7 @@ func query(ctx context.Context, node *obj.Tree) (result interface{}, detail *pro
 	request.Size = unit.Size
 	request.From = unit.From
 
+	request.Val = unit.Val
 	request.Data = unit.Data
 	request.Datas = unit.Datas
 
@@ -65,11 +66,13 @@ func query(ctx context.Context, node *obj.Tree) (result interface{}, detail *pro
 
 	request.Prefix = unit.Prefix
 	request.Key = unit.Key
-	request.Args = unit.Args
+	request.Keys = unit.Keys
 	request.Bytes = unit.Bytes
 
 	request.Params = unit.Params
+
 	request.Query = unit.Query
+	request.Args = unit.Args
 
 	// 走 db 查询
 	return database.QueryResult(ctx, request, realNode, realNode.GetDB().Addr, node.TransInfo)

@@ -34,10 +34,16 @@ import (
 )
 
 type Redis struct {
-	Cmd        string
-	Prefix     string
-	Key        string
-	Args       []interface{}
+	Cmd    string
+	Prefix string
+	Key    string
+	Keys   []string
+	Val    interface{}
+	Data   types.Map
+	Datas  []map[string]interface{}
+	Params types.Map
+	Args   []interface{}
+
 	WithScores bool
 
 	Addr    *util.DBAddress
@@ -51,9 +57,13 @@ func (r *Redis) SetParams(req *plugin.Request,
 	r.Cmd = req.Op
 	r.Prefix = req.Prefix
 	r.Key = req.Key
-	r.Args = req.Args
+	r.Keys = req.Keys
+	r.Val = req.Val
+	r.Data = req.Data
+	r.Datas = req.Datas
+	r.Params = req.Params
 
-	r.WithScores, _ = req.Params.GetBool("with_scores")
+	r.Args = req.Args
 
 	r.Addr = addr
 	return nil
@@ -62,12 +72,55 @@ func (r *Redis) SetParams(req *plugin.Request,
 // Query sql 查询
 func (r *Redis) Query(ctx context.Context) (interface{}, *proto.Detail, bool, error) {
 	r.TimeLog = olog.NewTimeLog(ctx, r.Addr)
-	result, isNil, err := r.Do(ctx)
-	return result, nil, isNil, err
+
+	args, err := r.parseRequest()
+	if err != nil {
+		return nil, nil, false, errs.NewDBf(errs.ErrRedisReqParse, "parse redis req to command error: %v", err)
+	}
+
+	reply, isNil, err := r.do(ctx, args)
+	if err != nil || isNil {
+		return nil, nil, isNil, err
+	}
+
+	return r.parseResult(reply)
 }
 
-// Do 执行 redis
-func (r *Redis) Do(ctx context.Context) (interface{}, bool, error) {
+// GetQueryStatement 获取 es 的查询语句
+func (r *Redis) GetQueryStatement() string {
+	return r.QL
+}
+
+func (r *Redis) do(ctx context.Context, args []interface{}) (interface{}, bool, error) {
+	c := client.NewClient(r.Addr)
+
+	//执行 DO
+	reply, err := c.Do(ctx, r.Cmd, args...)
+
+	if err != nil && err != redigo.ErrNil {
+		if !olog.OmitError(r.Addr) {
+			r.TimeLog.Errorf(errs.Code(err), "redis error:[%s], cmd=[%s %v]",
+				errs.Msg(err), r.Cmd, util.FormatArgs(args))
+		}
+
+		return nil, false, err
+	} else if r.TimeLog.OverThreshold() {
+		tmp, _ := redigo.Strings(reply, err)
+		r.TimeLog.Warn("redis slow: ", r.Cmd, util.FormatArgs(args), tmp) // 慢日志
+	} else if olog.IsDebug(r.Addr) {
+		tmp, _ := redigo.Strings(reply, err)
+		r.TimeLog.Info("redis: ", r.Cmd, util.FormatArgs(args), tmp) // debug日志
+	}
+
+	if err == redigo.ErrNil {
+		return nil, true, nil
+	}
+
+	return reply, false, nil
+}
+
+func (r *Redis) parseRequest() ([]interface{}, error) {
+	r.WithScores, _ = r.Params.GetBool("with_scores")
 	if r.WithScores {
 		if len(r.Args) <= 2 {
 			r.Args = append(r.Args, "WITHSCORES")
@@ -83,16 +136,29 @@ func (r *Redis) Do(ctx context.Context) (interface{}, bool, error) {
 		}
 	}
 
-	reply, isNil, err := r.do(ctx)
-	if err != nil || isNil {
-		return nil, isNil, err
+	args := []interface{}{}
+	args = append(args, fmt.Sprintf("%s%s", r.Prefix, r.Key))
+
+	if len(r.Args) > 0 {
+		args = append(args, r.Args...)
+		return args, nil
 	}
 
+	switch r.Cmd {
+	case consts.OpExpire:
+		args = append(args, r.Val)
+	}
+
+	return args, nil
+}
+
+func (r *Redis) parseResult(reply interface{}) (interface{}, *proto.Detail, bool, error) {
 	var ret interface{}
+	var err error
 
 	switch consts.GetRedisRetType(r.Cmd, r.WithScores) {
 	case consts.RedisRetTypeNil:
-		return nil, false, nil
+		return nil, nil, false, nil
 	case consts.RedisRetTypeString:
 		ret, err = redigo.String(reply, nil)
 	case consts.RedisRetTypeBool:
@@ -137,61 +203,24 @@ func (r *Redis) Do(ctx context.Context) (interface{}, bool, error) {
 		tmp, err = redigo.ByteSlices(reply, nil)
 		if err == nil {
 			memberScore := proto.MemberScore{}
-			memberScore.Member, memberScore.Score, err = decodeRangeWithScores(tmp)
+			memberScore.Member, memberScore.Score, err = r.decodeRangeWithScores(tmp)
 			ret = &memberScore
 		}
 	}
 
 	if err != nil {
 		if err == redigo.ErrNil {
-			return nil, true, nil
+			return nil, nil, true, nil
 		}
 
-		return nil, false, errs.NewDBf(errs.ErrRedisDecode,
+		return nil, nil, false, errs.NewDBf(errs.ErrRedisDecode,
 			"redis decode error: [%v], cmd=[%s %s%s %v]", err, r.Cmd, r.Prefix, r.Key, util.FormatArgs(r.Args))
 	}
 
-	return ret, false, nil
+	return ret, nil, false, nil
 }
 
-// GetQueryStatement 获取 es 的查询语句
-func (r *Redis) GetQueryStatement() string {
-	return r.QL
-}
-
-func (r *Redis) do(ctx context.Context) (interface{}, bool, error) {
-	c := client.NewClient(r.Addr)
-
-	args := []interface{}{}
-	args = append(args, fmt.Sprintf("%s%s", r.Prefix, r.Key))
-	args = append(args, r.Args...)
-
-	//执行 DO
-	reply, err := c.Do(ctx, r.Cmd, args...)
-
-	if err != nil && err != redigo.ErrNil {
-		if !olog.OmitError(r.Addr) {
-			r.TimeLog.Errorf(errs.Code(err), "redis error:[%s], cmd=[%s %v]",
-				errs.Msg(err), r.Cmd, util.FormatArgs(args))
-		}
-
-		return nil, false, err
-	} else if r.TimeLog.OverThreshold() {
-		tmp, _ := redigo.Strings(reply, err)
-		r.TimeLog.Warn("redis slow: ", r.Cmd, util.FormatArgs(args), tmp) // 慢日志
-	} else if olog.IsDebug(r.Addr) {
-		tmp, _ := redigo.Strings(reply, err)
-		r.TimeLog.Info("redis: ", r.Cmd, util.FormatArgs(args), tmp) // debug日志
-	}
-
-	if err == redigo.ErrNil {
-		return nil, true, nil
-	}
-
-	return reply, false, nil
-}
-
-func decodeRangeWithScores(src [][]byte) (member []string, score []float64, err error) {
+func (r *Redis) decodeRangeWithScores(src [][]byte) (member []string, score []float64, err error) {
 	if len(src) == 0 {
 		return nil, nil, nil
 	}
