@@ -21,6 +21,7 @@ import (
 
 	"github.com/horm-database/common/consts"
 	"github.com/horm-database/common/errs"
+	"github.com/horm-database/common/json"
 	"github.com/horm-database/common/log"
 	"github.com/horm-database/common/proto"
 	"github.com/horm-database/common/proto/plugin"
@@ -37,7 +38,7 @@ type Redis struct {
 	Cmd    string
 	Prefix string
 	Key    string
-	Keys   []string
+	Field  string
 	Val    interface{}
 	Data   types.Map
 	Datas  []map[string]interface{}
@@ -48,8 +49,6 @@ type Redis struct {
 
 	Addr    *util.DBAddress
 	TimeLog *log.TimeLog
-
-	QL string
 }
 
 func (r *Redis) SetParams(req *plugin.Request,
@@ -57,7 +56,7 @@ func (r *Redis) SetParams(req *plugin.Request,
 	r.Cmd = req.Op
 	r.Prefix = req.Prefix
 	r.Key = req.Key
-	r.Keys = req.Keys
+	r.Field = req.Field
 	r.Val = req.Val
 	r.Data = req.Data
 	r.Datas = req.Datas
@@ -73,12 +72,12 @@ func (r *Redis) SetParams(req *plugin.Request,
 func (r *Redis) Query(ctx context.Context) (interface{}, *proto.Detail, bool, error) {
 	r.TimeLog = olog.NewTimeLog(ctx, r.Addr)
 
-	args, err := r.parseRequest()
+	err := r.parseRequest()
 	if err != nil {
 		return nil, nil, false, errs.NewDBf(errs.ErrRedisReqParse, "parse redis req to command error: %v", err)
 	}
 
-	reply, isNil, err := r.do(ctx, args)
+	reply, isNil, err := r.do(ctx)
 	if err != nil || isNil {
 		return nil, nil, isNil, err
 	}
@@ -86,30 +85,30 @@ func (r *Redis) Query(ctx context.Context) (interface{}, *proto.Detail, bool, er
 	return r.parseResult(reply)
 }
 
-// GetQueryStatement 获取 es 的查询语句
-func (r *Redis) GetQueryStatement() string {
-	return r.QL
+// GetQuery 获取 redis cmmd 语句
+func (r *Redis) GetQuery() string {
+	return ""
 }
 
-func (r *Redis) do(ctx context.Context, args []interface{}) (interface{}, bool, error) {
+func (r *Redis) do(ctx context.Context) (interface{}, bool, error) {
 	c := client.NewClient(r.Addr)
 
 	//执行 DO
-	reply, err := c.Do(ctx, r.Cmd, args...)
+	reply, err := c.Do(ctx, r.Cmd, r.Args...)
 
 	if err != nil && err != redigo.ErrNil {
 		if !olog.OmitError(r.Addr) {
 			r.TimeLog.Errorf(errs.Code(err), "redis error:[%s], cmd=[%s %v]",
-				errs.Msg(err), r.Cmd, util.FormatArgs(args))
+				errs.Msg(err), r.Cmd, util.FormatArgs(r.Args))
 		}
 
 		return nil, false, err
 	} else if r.TimeLog.OverThreshold() {
 		tmp, _ := redigo.Strings(reply, err)
-		r.TimeLog.Warn("redis slow: ", r.Cmd, util.FormatArgs(args), tmp) // 慢日志
+		r.TimeLog.Warn("redis slow: ", r.Cmd, util.FormatArgs(r.Args), tmp) // 慢日志
 	} else if olog.IsDebug(r.Addr) {
 		tmp, _ := redigo.Strings(reply, err)
-		r.TimeLog.Info("redis: ", r.Cmd, util.FormatArgs(args), tmp) // debug日志
+		r.TimeLog.Info("redis: ", r.Cmd, util.FormatArgs(r.Args), tmp) // debug日志
 	}
 
 	if err == redigo.ErrNil {
@@ -119,9 +118,124 @@ func (r *Redis) do(ctx context.Context, args []interface{}) (interface{}, bool, 
 	return reply, false, nil
 }
 
-func (r *Redis) parseRequest() ([]interface{}, error) {
-	r.WithScores, _ = r.Params.GetBool("with_scores")
-	if r.WithScores {
+func (r *Redis) parseRequest() error {
+	if len(r.Args) > 0 {
+		switch r.Cmd {
+		case consts.OpMGet: // MGET 会走这里
+			for _, v := range r.Args {
+				r.Args = append(r.Args, fmt.Sprintf("%s%s", r.Prefix, types.ToString(v)))
+			}
+		case consts.OpHMGet, consts.OpHDel: // HMGET、HDEL 会走这里
+			for k, v := range r.Args {
+				r.Args[k] = types.ToString(v)
+			}
+			r.Args = append([]interface{}{fmt.Sprintf("%s%s", r.Prefix, r.Key)}, r.Args...)
+		case consts.OpLPush, consts.OpRPush, consts.OpSAdd, consts.OpSRem:
+			for k, v := range r.Args {
+				r.Args[k] = json.MarshalBaseToString(v)
+			}
+			r.Args = append([]interface{}{fmt.Sprintf("%s%s", r.Prefix, r.Key)}, r.Args...)
+		case consts.OpZAdd:
+			for k, v := range r.Args {
+				r.Args[k] = json.MarshalBaseToString(v)
+			}
+		default:
+			r.Args = append([]interface{}{fmt.Sprintf("%s%s", r.Prefix, r.Key)}, r.Args...)
+		}
+
+		return nil
+	}
+
+	if r.Cmd != consts.OpMSet {
+		r.Args = append(r.Args, fmt.Sprintf("%s%s", r.Prefix, r.Key))
+	}
+
+	switch r.Cmd {
+	case consts.OpExpire, consts.OpIncrBy:
+		r.Args = append(r.Args, r.Val)
+	case consts.OpSet:
+		r.Args = append(r.Args, r.encodeVal())
+		r.getParams(consts.SetParams)
+	case consts.OpSetEx: // 参数在前
+		r.getParams(consts.SetExParams)
+		r.Args = append(r.Args, r.encodeVal())
+	case consts.OpSetNX, consts.OpGetSet, consts.OpLPush, consts.OpRPush,
+		consts.OpSAdd, consts.OpSRem, consts.OpSIsMember:
+		r.Args = append(r.Args, r.encodeVal())
+	case consts.OpMSet:
+		for k, v := range r.Data {
+			r.Args = append(r.Args,
+				fmt.Sprintf("%s%s", r.Prefix, k),
+				json.MarshalBaseToString(v))
+		}
+	case consts.OpSetBit, consts.OpGetBit:
+		r.getParams(consts.SetGetBitParams)
+	case consts.OpBitCount:
+		r.getParams(consts.BitCountParams)
+	case consts.OpHSet:
+		if r.Field != "" {
+			r.Args = append(r.Args, r.Field, json.MarshalBaseToString(r.Val))
+		}
+
+		if r.Data != nil {
+			for k, v := range r.Data {
+				r.Args = append(r.Args, k, json.MarshalBaseToString(v))
+			}
+		}
+	case consts.OpHGet, consts.OpHExists, consts.OpHStrLen:
+		r.Args = append(r.Args, r.Field)
+	case consts.OpHSetNx, consts.OpHmSet:
+		for k, v := range r.Data {
+			r.Args = append(r.Args, k, json.MarshalBaseToString(v))
+		}
+	case consts.OpHIncrBy, consts.OpHIncrByFloat:
+		r.Args = append(r.Args, r.Field, r.Val)
+	case consts.OpLPop, consts.OpRPop, consts.OpSRandMember, consts.OpSPop:
+		r.getParams(consts.CountParams)
+	case consts.OpSMove:
+		r.getParams(consts.SMoveParams)
+		r.Args = append(r.Args, r.encodeVal())
+	case consts.OpZAdd:
+		r.Args = append(r.Args, r.encodeVal())
+	}
+
+	return nil
+}
+
+func (r *Redis) encodeVal() string {
+	if r.Datas != nil {
+		return json.MarshalToString(r.Datas)
+	} else if r.Data != nil {
+		return json.MarshalToString(r.Data)
+	} else {
+		return json.MarshalBaseToString(r.Val)
+	}
+}
+
+func (r *Redis) getParams(paramInfos []*consts.RedisParamInfo) {
+	if len(r.Params) == 0 {
+		return
+	}
+
+	for _, paramInfo := range paramInfos {
+		if arg, ok := r.Params[paramInfo.Name]; ok {
+			if !paramInfo.JustVal {
+				r.Args = append(r.Args, paramInfo.Name)
+			}
+			switch paramInfo.Cnt {
+			case 0, 1:
+				continue
+			case 2:
+				r.Args = append(r.Args, arg)
+			default:
+				tmp, _ := types.ToArray(arg)
+				r.Args = append(r.Args, tmp...)
+			}
+		}
+	}
+
+	withScores, _ := r.Params.GetBool("with_scores")
+	if withScores {
 		if len(r.Args) <= 2 {
 			r.Args = append(r.Args, "WITHSCORES")
 		} else {
@@ -136,27 +250,16 @@ func (r *Redis) parseRequest() ([]interface{}, error) {
 		}
 	}
 
-	args := []interface{}{}
-	args = append(args, fmt.Sprintf("%s%s", r.Prefix, r.Key))
-
-	if len(r.Args) > 0 {
-		args = append(args, r.Args...)
-		return args, nil
-	}
-
-	switch r.Cmd {
-	case consts.OpExpire:
-		args = append(args, r.Val)
-	}
-
-	return args, nil
+	return
 }
 
 func (r *Redis) parseResult(reply interface{}) (interface{}, *proto.Detail, bool, error) {
 	var ret interface{}
 	var err error
 
-	switch consts.GetRedisRetType(r.Cmd, r.WithScores) {
+	withscores, _ := r.Params.GetBool("withscores")
+	_, countExists, _ := r.Params.GetInt("count")
+	switch consts.GetRedisRetType(r.Cmd, withscores, countExists) {
 	case consts.RedisRetTypeNil:
 		return nil, nil, false, nil
 	case consts.RedisRetTypeString:
@@ -189,9 +292,12 @@ func (r *Redis) parseResult(reply interface{}) (interface{}, *proto.Detail, bool
 			var strs []string
 			strs, err = redigo.Strings(reply, nil)
 			if err == nil {
-				var mapRet = make(map[string]string, len(r.Args))
+				var mapRet = make(map[string]string, len(r.Args)-1)
 				for k, arg := range r.Args {
-					mapRet[types.ToString(arg)] = strs[k]
+					if k == 0 {
+						continue
+					}
+					mapRet[types.ToString(arg)] = strs[k-1]
 				}
 				ret = mapRet
 			}

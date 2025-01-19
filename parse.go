@@ -66,7 +66,7 @@ func query(ctx context.Context, node *obj.Tree) (result interface{}, detail *pro
 
 	request.Prefix = unit.Prefix
 	request.Key = unit.Key
-	request.Keys = unit.Keys
+	request.Field = unit.Field
 	request.Bytes = unit.Bytes
 
 	request.Params = unit.Params

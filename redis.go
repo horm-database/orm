@@ -55,9 +55,9 @@ func (o *ORM) Set(key string, value interface{}, args ...interface{}) *ORM {
 // SetEX 指定的 key 设置值及其过期时间。如果 key 已经存在， SETEX 命令将会替换旧的值。
 // param: key string
 // param: v interface{} 任意类型数据
-// param: ttl int 到期时间
-func (o *ORM) SetEX(key string, v interface{}, ttl int) *ORM {
-	o.query.SetEX(key, v, ttl)
+// param: seconds int 到期时间
+func (o *ORM) SetEX(key string, v interface{}, seconds int) *ORM {
+	o.query.SetEX(key, v, seconds)
 	return o
 }
 
@@ -116,8 +116,8 @@ func (o *ORM) MSet(values map[string]interface{}) *ORM {
 }
 
 // MGet 返回多个 key 的 value
-// param: keys string
-func (o *ORM) MGet(keys ...string) *ORM {
+// param: keys interface{}
+func (o *ORM) MGet(keys ...interface{}) *ORM {
 	o.query.MGet(keys...)
 	return o
 }
@@ -125,8 +125,8 @@ func (o *ORM) MGet(keys ...string) *ORM {
 // SetBit 设置或清除指定偏移量上的位
 // param: key string
 // param: offset uint32 参数必须大于或等于 0 ，小于 2^32 (bit 映射被限制在 512 MB 之内)
-// param: value bool true:设置为1,false：设置为0
-func (o *ORM) SetBit(key string, offset uint32, value bool) *ORM {
+// param: value int 1-设置, 0-清除
+func (o *ORM) SetBit(key string, offset uint32, value int) *ORM {
 	o.query.SetBit(key, offset, value)
 	return o
 }
@@ -143,8 +143,8 @@ func (o *ORM) GetBit(key string, offset uint32) *ORM {
 // param: key string
 // param: start int 可以使用负数值： 比如 -1 表示最后一个字节， -2 表示倒数第二个字节，以此类推
 // param: end int 可以使用负数值： 比如 -1 表示最后一个字节， -2 表示倒数第二个字节，以此类推
-func (o *ORM) BitCount(key string, start, end int) *ORM {
-	o.query.BitCount(key, start, end)
+func (o *ORM) BitCount(key string, params ...interface{}) *ORM {
+	o.query.BitCount(key, params...)
 	return o
 }
 
@@ -177,8 +177,8 @@ func (o *ORM) HmSet(key string, v interface{}) *ORM {
 
 // HmGet 返回哈希表中，一个或多个给定字段的值。
 // param: key string
-// param: fields string 需要返回的域
-func (o *ORM) HmGet(key string, fields ...string) *ORM {
+// param: fields interface 需要返回的域
+func (o *ORM) HmGet(key string, fields ...interface{}) *ORM {
 	o.query.HmGet(key, fields...)
 	return o
 }
@@ -278,15 +278,15 @@ func (o *ORM) RPush(key string, v ...interface{}) *ORM {
 
 // LPop 移除并返回列表的第一个元素。
 // param: key string
-func (o *ORM) LPop(key string) *ORM {
-	o.query.LPop(key)
+func (o *ORM) LPop(key string, count ...int) *ORM {
+	o.query.LPop(key, count...)
 	return o
 }
 
 // RPop 移除列表的最后一个元素，返回值为移除的元素。
 // param: key string
-func (o *ORM) RPop(key string) *ORM {
-	o.query.RPop(key)
+func (o *ORM) RPop(key string, count ...int) *ORM {
+	o.query.RPop(key, count...)
 	return o
 }
 
@@ -341,16 +341,16 @@ func (o *ORM) SIsMember(key string, member interface{}) *ORM {
 // 如果 count 为正数，且小于集合基数，那么命令返回一个包含 count 个元素的数组，数组中的元素各不相同。
 // 如果 count 大于等于集合基数，那么返回整个集合。
 // 如果 count 为负数，那么命令返回一个数组，数组中的元素可能会重复出现多次，而数组的长度为 count 的绝对值。
-func (o *ORM) SRandMember(key string, count int) *ORM {
-	o.query.SRandMember(key, count)
+func (o *ORM) SRandMember(key string, count ...int) *ORM {
+	o.query.SRandMember(key, count...)
 	return o
 }
 
 // SPop 移除集合中的指定 key 的一个或多个随机成员，移除后会返回移除的成员。
 // param: key string
-// param: int count
-func (o *ORM) SPop(key string, count int) *ORM {
-	o.query.SPop(key, count)
+// param: int count，可选，如果不输入，返回是字符串，否则返回字符串数组
+func (o *ORM) SPop(key string, count ...int) *ORM {
+	o.query.SPop(key, count...)
 	return o
 }
 

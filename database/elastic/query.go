@@ -173,8 +173,8 @@ func (q *Query) Query(ctx context.Context) (interface{}, *proto.Detail, bool, er
 	return nil, nil, false, nil
 }
 
-// GetQueryStatement 获取 es 的查询语句
-func (q *Query) GetQueryStatement() string {
+// GetQuery 获取 es 的查询语句
+func (q *Query) GetQuery() string {
 	return q.QL
 }
 

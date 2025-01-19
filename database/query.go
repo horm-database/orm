@@ -30,9 +30,10 @@ import (
 
 // Query 数据库开放接口
 type Query interface {
-	Query(ctx context.Context) (interface{}, *proto.Detail, bool, error)                                     // 查询
-	SetParams(req *plugin.Request, prop *obj.Property, addr *util.DBAddress, transInfo *obj.TransInfo) error // 设置查询参数
-	GetQueryStatement() string                                                                               // 获取查询语句
+	Query(ctx context.Context) (interface{}, *proto.Detail, bool, error) // 查询
+	SetParams(req *plugin.Request, prop *obj.Property,
+		addr *util.DBAddress, transInfo *obj.TransInfo) error // 设置查询参数
+	GetQuery() string // 获取查询语句
 }
 
 func QueryResult(ctx context.Context, req *plugin.Request, node *obj.Tree,
