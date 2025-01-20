@@ -122,23 +122,31 @@ func (r *Redis) parseRequest() error {
 	if len(r.Args) > 0 {
 		switch r.Cmd {
 		case consts.OpMGet: // MGET 会走这里
-			for _, v := range r.Args {
-				r.Args = append(r.Args, fmt.Sprintf("%s%s", r.Prefix, types.ToString(v)))
+			for k, v := range r.Args {
+				r.Args[k] = fmt.Sprintf("%s%s", r.Prefix, types.ToString(v))
 			}
 		case consts.OpHMGet, consts.OpHDel: // HMGET、HDEL 会走这里
 			for k, v := range r.Args {
 				r.Args[k] = types.ToString(v)
 			}
 			r.Args = append([]interface{}{fmt.Sprintf("%s%s", r.Prefix, r.Key)}, r.Args...)
-		case consts.OpLPush, consts.OpRPush, consts.OpSAdd, consts.OpSRem:
+		case consts.OpLPush, consts.OpRPush, consts.OpSAdd, consts.OpSRem, consts.OpZRem:
 			for k, v := range r.Args {
 				r.Args[k] = json.MarshalBaseToString(v)
 			}
 			r.Args = append([]interface{}{fmt.Sprintf("%s%s", r.Prefix, r.Key)}, r.Args...)
 		case consts.OpZAdd:
-			for k, v := range r.Args {
-				r.Args[k] = json.MarshalBaseToString(v)
+			args := []interface{}{fmt.Sprintf("%s%s", r.Prefix, r.Key)}
+			scores, _, _ := r.Params.GetStringArray("scores")
+			if len(scores) != len(r.Args) {
+				return errs.Newf(errs.ErrReqParamInvalid, "ZADD param scores`s length must be equal to length of args")
 			}
+
+			for k, v := range r.Args {
+				args = append(args, scores[k], json.MarshalBaseToString(v))
+			}
+
+			r.Args = args
 		default:
 			r.Args = append([]interface{}{fmt.Sprintf("%s%s", r.Prefix, r.Key)}, r.Args...)
 		}
@@ -151,25 +159,52 @@ func (r *Redis) parseRequest() error {
 	}
 
 	switch r.Cmd {
-	case consts.OpExpire, consts.OpIncrBy:
-		r.Args = append(r.Args, r.Val)
+	case consts.OpExpire:
+		seconds, _, _ := r.Params.GetInt("seconds")
+		if seconds == 0 {
+			return errs.Newf(errs.ErrReqParamInvalid, "EXPIRE param `seconds` is zero")
+		}
+
+		r.Args = append(r.Args, seconds)
+	case consts.OpIncrBy:
+		increment, exists := r.Params.GetString("increment")
+		if !exists {
+			return errs.Newf(errs.ErrReqParamInvalid, "INCRBY param `increment` is not set")
+		}
+		r.Args = append(r.Args, increment)
 	case consts.OpSet:
 		r.Args = append(r.Args, r.encodeVal())
 		r.getParams(consts.SetParams)
 	case consts.OpSetEx: // 参数在前
-		r.getParams(consts.SetExParams)
-		r.Args = append(r.Args, r.encodeVal())
-	case consts.OpSetNX, consts.OpGetSet, consts.OpLPush, consts.OpRPush,
-		consts.OpSAdd, consts.OpSRem, consts.OpSIsMember:
+		seconds, _, _ := r.Params.GetInt("seconds")
+		if seconds == 0 {
+			return errs.Newf(errs.ErrReqParamInvalid, "SETEX param `seconds` is zero")
+		}
+
+		r.Args = append(r.Args, seconds, r.encodeVal())
+	case consts.OpSetNX, consts.OpGetSet, consts.OpLPush, consts.OpRPush, consts.OpSAdd, consts.OpSIsMember,
+		consts.OpSRem, consts.OpZRem, consts.OpZScore, consts.OpZRank, consts.OpZRevRank:
 		r.Args = append(r.Args, r.encodeVal())
 	case consts.OpMSet:
-		for k, v := range r.Data {
-			r.Args = append(r.Args,
-				fmt.Sprintf("%s%s", r.Prefix, k),
-				json.MarshalBaseToString(v))
+		for key, value := range r.Data {
+			r.Args = append(r.Args, fmt.Sprintf("%s%s", r.Prefix, key), json.MarshalBaseToString(value))
 		}
-	case consts.OpSetBit, consts.OpGetBit:
-		r.getParams(consts.SetGetBitParams)
+	case consts.OpSetBit:
+		offset, exist, _ := r.Params.GetInt("offset")
+		if !exist {
+			return errs.Newf(errs.ErrReqParamInvalid, "SETBIT param `offset` is not set")
+		}
+		value, exist, _ := r.Params.GetInt("value")
+		if !exist {
+			return errs.Newf(errs.ErrReqParamInvalid, "SETBIT param `value` is not set")
+		}
+		r.Args = append(r.Args, offset, value)
+	case consts.OpGetBit:
+		offset, exist, _ := r.Params.GetInt("offset")
+		if !exist {
+			return errs.Newf(errs.ErrReqParamInvalid, "GETBIT param `offset` is not set")
+		}
+		r.Args = append(r.Args, offset)
 	case consts.OpBitCount:
 		r.getParams(consts.BitCountParams)
 	case consts.OpHSet:
@@ -178,8 +213,8 @@ func (r *Redis) parseRequest() error {
 		}
 
 		if r.Data != nil {
-			for k, v := range r.Data {
-				r.Args = append(r.Args, k, json.MarshalBaseToString(v))
+			for field, value := range r.Data {
+				r.Args = append(r.Args, field, json.MarshalBaseToString(value))
 			}
 		}
 	case consts.OpHGet, consts.OpHExists, consts.OpHStrLen:
@@ -189,14 +224,68 @@ func (r *Redis) parseRequest() error {
 			r.Args = append(r.Args, k, json.MarshalBaseToString(v))
 		}
 	case consts.OpHIncrBy, consts.OpHIncrByFloat:
-		r.Args = append(r.Args, r.Field, r.Val)
-	case consts.OpLPop, consts.OpRPop, consts.OpSRandMember, consts.OpSPop:
-		r.getParams(consts.CountParams)
+		increment, exists := r.Params.GetString("increment")
+		if !exists {
+			return errs.Newf(errs.ErrReqParamInvalid, "%s param `increment` is not set", r.Cmd)
+		}
+		r.Args = append(r.Args, r.Field, increment)
+	case consts.OpLPop, consts.OpRPop, consts.OpSRandMember, consts.OpSPop, consts.OpZPopMin, consts.OpZPopMax:
+		count, exists, err := r.Params.GetInt("count")
+		if exists {
+			if err != nil || count == 0 {
+				return errs.Newf(errs.ErrReqParamInvalid, "%s param `count` must be int and bigger than 0", r.Cmd)
+			}
+			r.Args = append(r.Args, count)
+		}
 	case consts.OpSMove:
-		r.getParams(consts.SMoveParams)
-		r.Args = append(r.Args, r.encodeVal())
+		destination, exists := r.Params.GetString("destination")
+		if !exists {
+			return errs.Newf(errs.ErrReqParamInvalid, "SMOVE param `destination` is not set")
+		}
+		r.Args = append(r.Args, destination, r.encodeVal())
 	case consts.OpZAdd:
-		r.Args = append(r.Args, r.encodeVal())
+		score, exists := r.Params.GetString("score")
+		if !exists {
+			return errs.New(errs.ErrReqParamInvalid, "ZADD param `score` is not set")
+		}
+
+		r.Args = append(r.Args, score, r.encodeVal())
+	case consts.OpZRemRangeByScore, consts.OpZCount:
+		min, exists := r.Params.GetString("min")
+		if !exists {
+			return errs.Newf(errs.ErrReqParamInvalid, "%s param `min` is not set", r.Cmd)
+		}
+		max, exists := r.Params.GetString("max")
+		if !exists {
+			return errs.Newf(errs.ErrReqParamInvalid, "%s param `max` is not set", r.Cmd)
+		}
+
+		r.Args = append(r.Args, min, max)
+	case consts.OpZRemRangeByRank:
+		start, exists, err := r.Params.GetInt64("start")
+		if !exists || err != nil {
+			return errs.Newf(errs.ErrReqParamInvalid, "%s param `start` is invalid", r.Cmd)
+		}
+		stop, exists, err := r.Params.GetInt64("stop")
+		if !exists || err != nil {
+			return errs.Newf(errs.ErrReqParamInvalid, "%s param `stop` is invalid", r.Cmd)
+		}
+
+		r.Args = append(r.Args, start, stop)
+	case consts.OpZIncrBy:
+		increment, exists := r.Params.GetString("increment")
+		if !exists {
+			return errs.Newf(errs.ErrReqParamInvalid, "%s param `increment` is not set", r.Cmd)
+		}
+		r.Args = append(r.Args, increment, r.encodeVal())
+	case consts.OpZRange:
+		r.getParams(consts.ZRangeParams)
+	case consts.OpZRangeByScore:
+		r.getParams(consts.ZRangeByScoreParams)
+	case consts.OpZRevRange:
+		r.getParams(consts.ZRevRangeParams)
+	case consts.OpZRevRangeByScore:
+		r.getParams(consts.ZRevRangeByScoreParams)
 	}
 
 	return nil
@@ -234,22 +323,6 @@ func (r *Redis) getParams(paramInfos []*consts.RedisParamInfo) {
 		}
 	}
 
-	withScores, _ := r.Params.GetBool("with_scores")
-	if withScores {
-		if len(r.Args) <= 2 {
-			r.Args = append(r.Args, "WITHSCORES")
-		} else {
-			tmp := make([]interface{}, len(r.Args)+1)
-			for k, v := range r.Args {
-				if k == 2 {
-					tmp[k] = "WITHSCORES"
-				}
-				tmp[k] = v
-				r.Args = tmp
-			}
-		}
-	}
-
 	return
 }
 
@@ -257,9 +330,9 @@ func (r *Redis) parseResult(reply interface{}) (interface{}, *proto.Detail, bool
 	var ret interface{}
 	var err error
 
-	withscores, _ := r.Params.GetBool("withscores")
+	withScores, _ := r.Params.GetBool("WITHSCORES")
 	_, countExists, _ := r.Params.GetInt("count")
-	switch consts.GetRedisRetType(r.Cmd, withscores, countExists) {
+	switch consts.GetRedisRetType(r.Cmd, withScores, countExists) {
 	case consts.RedisRetTypeNil:
 		return nil, nil, false, nil
 	case consts.RedisRetTypeString:

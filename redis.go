@@ -472,39 +472,39 @@ func (o *ORM) ZIncrBy(key string, member, incr interface{}) *ORM {
 // ZRange 返回有序集中，指定区间内的成员。其中成员的位置按分数值递增(从小到大)来排序。
 // param: key string
 // param: int start, stop 以 0 表示有序集第一个成员，以 1 表示有序集第二个成员，你也可以使用负数下标，
-// param: withScore 是否返回有序集的分数， true - 返回，false - 不返回，默认不返回，结果分开在两个数组存储，但是数组下标是一一对应的，比如 member[3] 成员的分数是 score[3]
 // 以 -1 表示最后一个成员， -2 表示倒数第二个成员，以此类推。
-func (o *ORM) ZRange(key string, start, stop int, withScore ...bool) *ORM {
-	o.query.ZRange(key, start, stop, withScore...)
+// param: args [BYSCORE | BYLEX] [REV] [LIMIT offset count] [WITHSCORES]
+// WITHSCORES 是否返回有序集的分数，结果分开在两个数组存储，但是数组下标是一一对应的，比如 member[3] 成员的分数是 score[3]
+func (o *ORM) ZRange(key string, start, stop interface{}, args ...interface{}) *ORM {
+	o.query.ZRange(key, start, stop, args...)
 	return o
 }
 
 // ZRangeByScore 根据分数返回有序集中指定区间的成员，顺序从小到大
 // param: key string
 // param: int min, max 分数的范围，类型必须为 int, float，但是 -inf +inf 表示负正无穷大
-// param: withScores 是否返回有序集的分数， true - 返回，false - 不返回，默认不返回，结果分开在两个数组存储，但是数组下标是一一对应的，比如 member[3] 成员的分数是 score[3]
-// param: limit offset count 游标
-func (o *ORM) ZRangeByScore(key string, min, max interface{}, withScores bool, limit ...int64) *ORM {
-	o.query.ZRangeByScore(key, min, max, withScores, limit...)
+// param: WITHSCORES 是否返回有序集的分数，结果分开在两个数组存储，但是数组下标是一一对应的，比如 member[3] 成员的分数是 score[3]
+// param: LIMIT信息，包含 offset count
+func (o *ORM) ZRangeByScore(key string, min, max interface{}, args ...interface{}) *ORM {
+	o.query.ZRangeByScore(key, min, max, args...)
 	return o
 }
 
 // ZRevRange 返回有序集中指定区间的成员，其中成员的位置按分数值递减(从大到小)来排列。
 // param: key string
-// param: start, stop 排名区间，以 0 表示有序集第一个成员，以 1 表示有序集第二个成员，你也可以使用负数下标，
-// param: withScore 是否返回有序集的分数， true - 返回，false - 不返回，默认不返回，结果分开在两个数组存储，但是数组下标是一一对应的，比如 member[3] 成员的分数是 score[3]
-// 以 -1 表示最后一个成员， -2 表示倒数第二个成员，以此类推。
-func (o *ORM) ZRevRange(key string, start, stop int, withScore ...bool) *ORM {
-	o.query.ZRevRange(key, start, stop, withScore...)
+// param: start, stop 排名区间，以 0 表示有序集第一个成员，以 1 表示有序集第二个成员，你也可以使用负数下标
+// param: WITHSCORES 是否返回有序集的分数，结果分开在两个数组存储，但是数组下标是一一对应的，比如 member[3] 成员的分数是 score[3]
+func (o *ORM) ZRevRange(key string, start, stop int, args ...interface{}) *ORM {
+	o.query.ZRevRange(key, start, stop, args...)
 	return o
 }
 
 // ZRevRangeByScore 返回有序集中指定分数区间内的所有的成员。有序集成员按分数值递减(从大到小)的次序排列。
 // param: key string
 // param: max, min  interface{} 分数区间，类型为整数或双精度浮点数，但是 -inf +inf 表示负正无穷大
-// param: withScore 是否返回有序集的分数， true - 返回，false - 不返回，默认不返回，结果分开在两个数组存储，但是数组下标是一一对应的，比如 member[3] 成员的分数是 score[3]
-// param: limit offset count 游标
-func (o *ORM) ZRevRangeByScore(key string, max, min interface{}, withScore bool, limit ...int64) *ORM {
-	o.query.ZRevRangeByScore(key, max, min, withScore, limit...)
+// param: WITHSCORES 是否返回有序集的分数，结果分开在两个数组存储，但是数组下标是一一对应的，比如 member[3] 成员的分数是 score[3]
+// param: LIMIT 信息，包含 offset count
+func (o *ORM) ZRevRangeByScore(key string, max, min interface{}, args ...interface{}) *ORM {
+	o.query.ZRevRangeByScore(key, max, min, args...)
 	return o
 }
