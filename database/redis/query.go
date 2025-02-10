@@ -45,14 +45,11 @@ type Redis struct {
 	Params types.Map
 	Args   []interface{}
 
-	WithScores bool
-
 	Addr    *util.DBAddress
 	TimeLog *log.TimeLog
 }
 
-func (r *Redis) SetParams(req *plugin.Request,
-	prop *obj.Property, addr *util.DBAddress, transInfo *obj.TransInfo) error {
+func (r *Redis) SetParams(req *plugin.Request, _ *obj.Property, addr *util.DBAddress, _ *obj.TransInfo) error {
 	r.Cmd = req.Op
 	r.Prefix = req.Prefix
 	r.Key = req.Key

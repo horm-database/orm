@@ -68,7 +68,7 @@ type Query struct {
 }
 
 func (q *Query) SetParams(req *plugin.Request,
-	prop *obj.Property, addr *util.DBAddress, transInfo *obj.TransInfo) (err error) {
+	prop *obj.Property, addr *util.DBAddress, _ *obj.TransInfo) (err error) {
 	q.OP = req.Op
 	q.Index = req.Tables
 	q.Type = req.Type
