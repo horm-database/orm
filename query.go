@@ -136,7 +136,7 @@ func (o *ORM) Having(having horm.Where) *ORM {
 	return o
 }
 
-// SetParam 与数据库特性相关的附加参数，例如 redis 的WITHSCORES，以及 elastic 的 collapse、runtime_mappings、track_total_hits 等等。
+// SetParam 与数据库特性相关的附加参数，例如 redis 的 withscores、EX、NX、等，以及 elastic 的 refresh、collapse、runtime_mappings、track_total_hits 等等。
 func (o *ORM) SetParam(key string, value interface{}) *ORM {
 	o.query.SetParam(key, value)
 	return o
